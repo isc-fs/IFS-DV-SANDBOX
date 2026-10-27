@@ -1,0 +1,112 @@
+name: CI
+
+# Same idea as IFS09-DV-PIPELINE's CI: nothing gets into dev or main unless
+# it builds and the tests pass. Here "the tests" also means the whole loop
+# still works: the smoke test drives the full pipeline on the mock sim.
+on:
+  pull_request:
+    branches: [dev, main]
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  tests:
+    name: Build, unit tests, smoke test
+    runs-on: ubuntu-latest
+    # Same base and shared-memory size as docker/Dockerfile + docker-compose.yml.
+    container:
+      image: ros:humble-ros-base
+      options: --shm-size=1g
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies (same as docker/Dockerfile)
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            python3-colcon-common-extensions python3-numpy python3-scipy python3-pytest \
+            cmake build-essential \
+            ros-humble-tf2-ros ros-humble-nav-msgs ros-humble-sensor-msgs-py \
+            ros-humble-visualization-msgs
+          rm -rf /var/lib/apt/lists/*
+
+      - name: Build vendored packages (bridge + fs_msgs)
+        # shell: bash is required: container jobs default to sh, which has no `source`.
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          colcon build --base-paths vendor --build-base /tmp/vendor_build \
+            --install-base /opt/ifs_ws/install --cmake-args -DBUILD_TESTING=OFF
+
+      - name: Build workspace
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          source /opt/ifs_ws/install/setup.bash
+          cd ros2_ws && colcon build --symlink-install
+
+      - name: Unit tests (every package's test/ folder)
+        shell: bash
+        run: |
+          source /opt/ros/humble/setup.bash
+          source /opt/ifs_ws/install/setup.bash
+          source ros2_ws/install/local_setup.bash
+          cd ros2_ws/src
+          python3 -m pytest -q -p no:cacheprovider */test --junit-xml=/tmp/pytest-results.xml
+
+      - name: Smoke test (full pipeline drives on the mock sim)
+        shell: bash
+        env:
+          ROS_LOCALHOST_ONLY: "1"
+        run: |
+          source /opt/ros/humble/setup.bash
+          source /opt/ifs_ws/install/setup.bash
+          source ros2_ws/install/local_setup.bash
+          export SANDBOX_ROOT="$PWD"      # the repo (it's /sandbox in the dev container)
+          # Same DDS tuning as the dev container (big LiDAR messages).
+          export FASTRTPS_DEFAULT_PROFILES_FILE="$PWD/docker/fastdds_profile.xml"
+          tools/smoke_test.sh
+
+      - name: Score (only if the PR description has an "sb-score:" line)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        env:
+          PR_BODY: ${{ github.event.pull_request.body }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+          ROS_LOCALHOST_ONLY: "1"
+        run: |
+          ARGS=$(printf '%s\n' "$PR_BODY" | tr -d '\r' | sed -n 's/^sb-score:[[:space:]]*//p' | head -1)
+          if [ -z "$ARGS" ]; then
+            echo "No 'sb-score:' line in the PR description, skipping."
+            exit 0
+          fi
+          # Only launch arguments and benchmark flags, nothing that could run code.
+          if ! printf '%s' "$ARGS" | grep -Eq '^[A-Za-z0-9_:=/. -]+$'; then
+            echo "::error::sb-score line has unexpected characters: $ARGS"; exit 1
+          fi
+          source /opt/ros/humble/setup.bash
+          source /opt/ifs_ws/install/setup.bash
+          source ros2_ws/install/local_setup.bash
+          export SANDBOX_ROOT="$PWD"
+          export FASTRTPS_DEFAULT_PROFILES_FILE="$PWD/docker/fastdds_profile.xml"
+          # shellcheck disable=SC2086
+          python3 tools/benchmark.py --label "$AUTHOR" $ARGS
+          cat results/LEADERBOARD.md >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: results
+          path: |
+            /tmp/pytest-results.xml
+            /tmp/smoke_launch.log
+            results/
+          if-no-files-found: ignore
