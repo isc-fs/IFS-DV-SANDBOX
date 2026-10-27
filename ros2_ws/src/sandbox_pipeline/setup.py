@@ -23,6 +23,7 @@ setup(
             "perception_baseline = sandbox_pipeline.perception_baseline:main",
             "slam_baseline = sandbox_pipeline.slam_baseline:main",
             "planning_baseline = sandbox_pipeline.planning_baseline:main",
+            "control_baseline = sandbox_pipeline.control_baseline:main",
         ],
     },
 )
