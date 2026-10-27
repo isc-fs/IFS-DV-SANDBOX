@@ -21,6 +21,7 @@ setup(
         "console_scripts": [
             "odometry_baseline = sandbox_pipeline.odometry_baseline:main",
             "perception_baseline = sandbox_pipeline.perception_baseline:main",
+            "slam_baseline = sandbox_pipeline.slam_baseline:main",
         ],
     },
 )
