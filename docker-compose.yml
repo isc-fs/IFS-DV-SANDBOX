@@ -1,0 +1,65 @@
+# IFS-DV-SANDBOX
+#
+#   docker compose up -d --build     # first time ~5 min, then seconds
+#   tools/shell.sh                   # open a shell inside the container
+#
+# The simulator (IFSSIM release binary) runs on your host, not in Docker.
+
+name: ifs-sandbox
+
+services:
+  sandbox:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: ifs-sandbox:humble
+    hostname: sandbox
+    # Host networking: the sim pushes sensor data over UDP to the bridge,
+    # and the Foxglove websocket (8765) is reachable at localhost.
+    network_mode: host
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    stdin_open: true
+    tty: true
+    environment:
+      - IFSSIM_HOST=${IFSSIM_HOST:-127.0.0.1}
+      - IFSSIM_PORT=${IFSSIM_PORT:-41451}
+      # Keep ROS traffic on this machine so teammates on the same wifi
+      # don't see (or drive!) each other's cars.
+      - ROS_LOCALHOST_ONLY=1
+      - ROS_DOMAIN_ID=${ROS_DOMAIN_ID:-0}
+      # Where tracks/ lives on the HOST. The sim runs on the host and
+      # needs a host path to load a track CSV.
+      - HOST_TRACKS_DIR=${HOST_TRACKS_DIR:-${PWD}/tracks}
+      # Bigger DDS buffers for the ~1.4 MB LiDAR messages.
+      - FASTRTPS_DEFAULT_PROFILES_FILE=/opt/fastdds_profile.xml
+      # Don't write __pycache__ into your source folders.
+      - PYTHONDONTWRITEBYTECODE=1
+    volumes:
+      - .:/sandbox
+      # colcon output stays inside Docker volumes (faster on Mac/Windows).
+      - ws_build:/sandbox/ros2_ws/build
+      - ws_install:/sandbox/ros2_ws/install
+      - ws_log:/sandbox/ros2_ws/log
+    shm_size: 1gb
+    # Lets the real-pipeline benchmark container share our shared memory (fast DDS).
+    ipc: shareable
+    command: ["sleep", "infinity"]
+
+  # OPTIONAL web visualiser (the Lichtblick desktop app is easier, see
+  # docs/GETTING_STARTED.md). Builds from source: ~5 min and needs ~8 GB of
+  # RAM for Docker.   docker compose --profile viz up -d lichtblick
+  # Then open http://localhost:8080 and connect to ws://localhost:8765.
+  lichtblick:
+    profiles: ["viz"]
+    build:
+      context: ./docker/lichtblick
+    image: ifs-lichtblick:sandbox
+    ports:
+      - "127.0.0.1:8080:8080"
+    restart: unless-stopped
+
+volumes:
+  ws_build:
+  ws_install:
+  ws_log:
