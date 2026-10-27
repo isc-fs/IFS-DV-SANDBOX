@@ -19,6 +19,7 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
+            "mock_sim = sandbox_tools.mock_sim:main",
         ],
     },
 )
