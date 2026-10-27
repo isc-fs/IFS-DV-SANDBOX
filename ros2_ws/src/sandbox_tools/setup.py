@@ -21,6 +21,7 @@ setup(
         "console_scripts": [
             "gt_cones = sandbox_tools.gt_cones:main",
             "gt_odom = sandbox_tools.gt_odom:main",
+            "lidar_skewer = sandbox_tools.lidar_skewer:main",
             "visualizer = sandbox_tools.visualizer:main",
             "monitor = sandbox_tools.monitor:main",
             "mock_sim = sandbox_tools.mock_sim:main",
