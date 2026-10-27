@@ -26,6 +26,7 @@ setup(
             "monitor = sandbox_tools.monitor:main",
             "mock_sim = sandbox_tools.mock_sim:main",
             "teleop = sandbox_tools.teleop:main",
+            "smoke_check = sandbox_tools.smoke_check:main",
         ],
     },
 )
