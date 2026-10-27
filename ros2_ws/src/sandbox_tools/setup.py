@@ -19,6 +19,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
+            "gt_cones = sandbox_tools.gt_cones:main",
+            "gt_odom = sandbox_tools.gt_odom:main",
             "mock_sim = sandbox_tools.mock_sim:main",
         ],
     },
