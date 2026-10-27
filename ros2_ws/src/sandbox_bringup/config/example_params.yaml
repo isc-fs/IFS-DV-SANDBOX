@@ -1,0 +1,13 @@
+# Example parameter overrides. Use with:
+#   sb-launch params:=/sandbox/ros2_ws/src/sandbox_bringup/config/example_params.yaml
+# Node names: perception, slam, planning, control, gt_cones, mock_sim, monitor.
+# Every parameter is declared (with its default) at the top of its node's file.
+
+control:
+  ros__parameters:
+    target_speed: 7.0
+
+gt_cones:
+  ros__parameters:
+    position_noise: 0.10
+    miss_rate: 0.1
