@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>sandbox_pipeline</name>
+  <version>0.1.0</version>
+  <description>Baseline pipeline: odometry, perception, slam, planning, control. Simple on purpose.</description>
+  <maintainer email="dv@iscracingteam.com">ISC Driverless</maintainer>
+  <license>MIT</license>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>sandbox_tools</exec_depend>
+  <exec_depend>sandbox_msgs</exec_depend>
+  <exec_depend>fs_msgs</exec_depend>
+  <exec_depend>nav_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
