@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+.venv/
+ros2_ws/build/
+ros2_ws/install/
+ros2_ws/log/
+bags/
+*.png
+!docs/**/*.png
+results/
