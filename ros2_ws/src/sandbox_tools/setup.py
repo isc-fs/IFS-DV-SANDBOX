@@ -29,6 +29,7 @@ setup(
             "smoke_check = sandbox_tools.smoke_check:main",
             "scorer = sandbox_tools.scorer:main",
             "bag_scorer = sandbox_tools.bag_scorer:main",
+            "real_adapter = sandbox_tools.real_adapter:main",
         ],
     },
 )
