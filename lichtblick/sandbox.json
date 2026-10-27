@@ -1,0 +1,189 @@
+{
+  "configById": {
+    "3D!main": {
+      "cameraState": {
+        "distance": 30,
+        "perspective": true,
+        "phi": 50,
+        "target": [
+          0,
+          0,
+          0
+        ],
+        "targetOffset": [
+          0,
+          5,
+          0
+        ],
+        "targetOrientation": [
+          0,
+          0,
+          0,
+          1
+        ],
+        "thetaOffset": 0,
+        "fovy": 45,
+        "near": 0.01,
+        "far": 5000
+      },
+      "followTf": "base_link",
+      "followMode": "follow-position",
+      "scene": {
+        "syncCamera": false,
+        "transforms": {
+          "showAxes": false,
+          "showLabels": false,
+          "axisScale": 0
+        },
+        "background": {
+          "color": "#111111"
+        }
+      },
+      "transforms": {
+        "frame:map": {
+          "visible": true
+        },
+        "frame:base_link": {
+          "visible": true
+        }
+      },
+      "topics": {
+        "/lidar_points/viz": {
+          "visible": true,
+          "colorField": "z",
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "minValue": -1.2,
+          "maxValue": -0.4,
+          "pointSize": 2,
+          "pointShape": "circle",
+          "decayTime": 0
+        },
+        "/lidar_points": {
+          "visible": false,
+          "colorField": "z",
+          "colorMode": "colormap",
+          "colorMap": "turbo",
+          "minValue": -1.2,
+          "maxValue": -0.4,
+          "pointSize": 2
+        },
+        "/sandbox/viz/track": {
+          "visible": true
+        },
+        "/sandbox/viz/map": {
+          "visible": true
+        },
+        "/sandbox/viz/cones": {
+          "visible": true
+        },
+        "/sandbox/path": {
+          "visible": true,
+          "lineWidth": 0.15,
+          "gradient": [
+            "#00ff88ff",
+            "#00ff8888"
+          ]
+        },
+        "/sandbox/control/lookahead": {
+          "visible": true
+        }
+      },
+      "layers": []
+    },
+    "Plot!speed_control": {
+      "title": "Speed & pedals",
+      "isSynced": true,
+      "legendDisplay": "floating",
+      "showLegend": true,
+      "showPlotValuesInLegend": true,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "xAxisVal": "timestamp",
+      "minYValue": 0,
+      "maxYValue": 12,
+      "paths": [
+        {
+          "value": "/sandbox/pose.twist.twist.linear.x",
+          "enabled": true,
+          "label": "speed (m/s)",
+          "color": "#00cc88",
+          "lineSize": 1.5,
+          "timestampMethod": "receiveTime",
+          "showLine": true
+        },
+        {
+          "value": "/control_command.throttle",
+          "enabled": true,
+          "label": "throttle",
+          "color": "#ffaa00",
+          "lineSize": 1.5,
+          "timestampMethod": "receiveTime",
+          "showLine": true
+        },
+        {
+          "value": "/control_command.brake",
+          "enabled": true,
+          "label": "brake",
+          "color": "#ff4444",
+          "lineSize": 1.5,
+          "timestampMethod": "receiveTime",
+          "showLine": true
+        }
+      ],
+      "sidebarDimension": 240
+    },
+    "Plot!steering": {
+      "title": "Steering",
+      "isSynced": true,
+      "legendDisplay": "floating",
+      "showLegend": true,
+      "showPlotValuesInLegend": true,
+      "showXAxisLabels": true,
+      "showYAxisLabels": true,
+      "xAxisVal": "timestamp",
+      "minYValue": -1,
+      "maxYValue": 1,
+      "paths": [
+        {
+          "value": "/control_command.steering",
+          "enabled": true,
+          "label": "steering [-1,1], + = left",
+          "color": "#55aaff",
+          "lineSize": 1.5,
+          "timestampMethod": "receiveTime",
+          "showLine": true
+        }
+      ],
+      "sidebarDimension": 240
+    },
+    "RawMessages!monitor": {
+      "topicPath": "/sandbox/monitor.data",
+      "diffEnabled": false,
+      "diffMethod": "custom",
+      "diffTopicPath": "",
+      "showFullMessageForDiff": false
+    }
+  },
+  "globalVariables": {},
+  "userNodes": {},
+  "playbackConfig": {
+    "speed": 1
+  },
+  "layout": {
+    "direction": "row",
+    "first": "3D!main",
+    "second": {
+      "direction": "column",
+      "first": "Plot!speed_control",
+      "second": {
+        "direction": "column",
+        "first": "Plot!steering",
+        "second": "RawMessages!monitor",
+        "splitPercentage": 60
+      },
+      "splitPercentage": 45
+    },
+    "splitPercentage": 65
+  }
+}
