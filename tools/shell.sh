@@ -9,6 +9,11 @@
 # `ros2 topic echo ...`.
 set -euo pipefail
 
+# Git Bash on Windows rewrites arguments that look like Unix paths
+# (/entrypoint.sh -> C:/Program Files/Git/entrypoint.sh) before Docker sees
+# them. These paths are inside the container, so turn that off.
+export MSYS_NO_PATHCONV=1 MSYS2_ARG_CONV_EXCL="*"
+
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
