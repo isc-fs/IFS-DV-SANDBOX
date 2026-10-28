@@ -7,6 +7,8 @@
 $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
+# docker-compose.yml uses ${PWD}, which bash/zsh set but PowerShell doesn't.
+$env:PWD = $Root
 
 # First run: write .env with the right settings for this machine.
 $EnvFile = Join-Path $Root ".env"
@@ -19,7 +21,9 @@ if (-not (Test-Path $EnvFile)) {
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 }
 
-$running = docker compose ps --status running --services 2>$null
+# Windows PowerShell turns redirected stderr lines (even a harmless Docker
+# warning) into errors, and "Stop" would abort the script: relax it here.
+$running = & { $ErrorActionPreference = "Continue"; docker compose ps --status running --services 2>$null }
 if (-not ($running -contains "sandbox")) {
     Write-Host "-> starting the sandbox container"
     docker compose up -d sandbox
