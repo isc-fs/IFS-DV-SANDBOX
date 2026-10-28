@@ -35,7 +35,6 @@ SCENARIOS = {
     "mock-C": {"sim": "mock", "track": "track_20260404_013725.csv"},
     "ifssim-A": {"sim": "ifssim", "track": "track_20260404_013721.csv"},
     "ifssim-B": {"sim": "ifssim", "track": "track_20260404_013723.csv"},
-    "ifssim-C": {"sim": "ifssim", "track": "track_20260404_013725.csv"},
     # Real car data (no ground truth): perception (+ SLAM) vs the real pipeline.
     "real-bag": {"sim": "bag", "bag": "bags/manual_20260920_154527_indexed.mcap"},
 }
@@ -43,7 +42,7 @@ BAG_TOPICS = ["/lidar_points", "/imu", "/motor_rpm", "/steering_angle", "/tf_sta
 GROUPS = {
     "real": ["real-bag"],
     "mock-all": ["mock-A", "mock-B", "mock-C"],
-    "ifssim-all": ["ifssim-A", "ifssim-B", "ifssim-C"],
+    "ifssim-all": ["ifssim-A", "ifssim-B"],   # not C: in IFSSIM that track runs into a tyre wall
 }
 
 # "Realistic" ground-truth perception used by --gt-noise (Level 2).

@@ -8,21 +8,21 @@
     "planning": "baseline",
     "control": "baseline"
   },
-  "date": "2026-10-26T10:39:39",
+  "date": "2026-10-28T21:05:35",
   "status": "finished",
   "laps_required": 1,
   "lap_times_s": [
-    86.03
+    85.98
   ],
   "cones_hit": 0,
-  "time_s": 86.03,
+  "time_s": 85.98,
   "odometry": {
-    "error_mean_m": 0.074,
-    "error_max_m": 0.111,
-    "yaw_error_mean_deg": 0.04,
-    "distance_m": 402.0,
-    "drift_percent": 0.028,
-    "score": 99.1
+    "error_mean_m": 0.15,
+    "error_max_m": 0.364,
+    "yaw_error_mean_deg": 0.14,
+    "distance_m": 401.8,
+    "drift_percent": 0.091,
+    "score": 97.0
   },
   "perception": {
     "recall": 1.0,
@@ -33,26 +33,26 @@
     "score": 100.0
   },
   "slam": {
-    "pose_error_mean_m": 0.074,
-    "pose_error_max_m": 0.111,
-    "yaw_error_mean_deg": 0.04,
+    "pose_error_mean_m": 0.15,
+    "pose_error_max_m": 0.364,
+    "yaw_error_mean_deg": 0.14,
     "map_recall": 0.993,
     "map_precision": 1.0,
-    "map_error_m": 0.078,
-    "score": 88.7
+    "map_error_m": 0.167,
+    "score": 76.7
   },
   "planning": {
-    "centre_offset_mean_m": 0.116,
+    "centre_offset_mean_m": 0.145,
     "outside_fraction": 0.0,
     "length_mean_m": 14.958,
-    "score": 92.2
+    "score": 90.3
   },
   "control": {
-    "centre_offset_mean_m": 0.139,
-    "centre_offset_max_m": 0.691,
-    "steer_rate_rms": 4.788,
+    "centre_offset_mean_m": 0.138,
+    "centre_offset_max_m": 0.701,
+    "steer_rate_rms": 2.325,
     "cones_hit": 0,
     "speed_mean_ms": 4.673,
-    "score": 70.7
+    "score": 75.3
   }
 }
