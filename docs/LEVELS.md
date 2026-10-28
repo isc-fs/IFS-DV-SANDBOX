@@ -92,8 +92,8 @@ realistic (`sb-score ... --gt-noise`: `position_noise 0.1`, `miss_rate 0.2`,
 **Experiments**
 - Plot your path vs the baseline's (Lichtblick, both runs, or record
   bags). Which is smoother? Does control behave differently with each?
-- Hairpins: try `skidpad.csv` and the other tracks
-  (`sb-launch sim:=mock track:=...`).
+- Try the other tracks (`sim tracks` lists them,
+  `sb-launch sim:=mock track:=...`).
 - What does your planner do with `unknown_rate 1.0` (no colours at all)?
 
 ## Level 3: perception  *(1–2 weeks)*

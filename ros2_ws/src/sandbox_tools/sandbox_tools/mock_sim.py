@@ -4,7 +4,7 @@ Use it when you can't (or don't want to) run the real simulator: on a
 laptop without a GPU, on a train, or to test something in 10 seconds.
 
     sb-launch sim:=mock                         # default track
-    sb-launch sim:=mock track:=skidpad.csv      # any CSV in tracks/
+    sb-launch sim:=mock track:=track_20260404_013723.csv   # any CSV in tracks/
 
 What it fakes:
   * the car: kinematic bicycle, throttle/brake -> acceleration, steering lag
