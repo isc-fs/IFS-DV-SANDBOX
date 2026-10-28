@@ -69,8 +69,7 @@ Get the sandbox working on your laptop and understand the loop.
 
 - **Minimum:** your `planning.py` + your control lap IFSSIM with
   `perception:=gt --gt-noise`.
-- **Stretch:** the full "done when" (`miss_rate 0.2`, `swap_rate 0.05`), and
-  `skidpad.csv`.
+- **Stretch:** the full "done when" (`miss_rate 0.2`, `swap_rate 0.05`).
 - **Demo:** your path vs the baseline path in Lichtblick, and your Planning
   score (Level 2 command in [LEADERBOARD.md](LEADERBOARD.md)). Which path helps
   control more, and why?
