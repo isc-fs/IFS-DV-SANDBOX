@@ -54,6 +54,23 @@ sb-launch control:=alice_pipeline/control
   --build-type ament_cmake --dependencies rclcpp ...`) and launch it the
   same way.
 
+### Tests for your package
+
+`sb-new` also creates `alice_pipeline/test/test_alice_pipeline.py`.
+`sb-test` runs it, and so does CI on every PR. The tests call your plain
+functions (`compute`, `plan`, `find_cones`) with hand-made inputs, so they
+need no simulator and take milliseconds.
+
+- The tests that are already there check the contract (shapes, ranges).
+  They must keep passing.
+- One behaviour test starts skipped. Delete its `@pytest.mark.skip` line
+  once your control steers.
+- Add your own in the same style: a small input where you know the right
+  answer. For example: cones only on one side, a hairpin, a scan with no
+  cones. When you fix a bug, first add a test that shows it, then fix it.
+
+Run only yours: `sb-test -k alice` (or `cd /sandbox/ros2_ws/src && pytest alice_pipeline/test`).
+
 ## Parameters
 
 Every node declares its parameters at the top of its file with a
