@@ -129,7 +129,7 @@ Notes:
 - **Baseline:** run with `sb-score --label baseline` for each setup in the
   table above.
 - **Real pipeline:** `tools/benchmark_real.sh <scenarios>` (for the heads), e.g.
-  `tools/benchmark_real.sh ifssim-A ifssim-B ifssim-C real-bag`.
+  `tools/benchmark_real.sh ifssim-A ifssim-B real-bag`.
   It runs the real IFS09 stack in its Docker image next to the sandbox,
   and `real_adapter` republishes its outputs on the sandbox topics so the
   same scorer measures it.
