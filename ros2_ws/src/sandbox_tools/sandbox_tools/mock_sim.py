@@ -26,6 +26,8 @@ from fs_msgs.msg import Cone as FsCone
 from fs_msgs.msg import ControlCommand, Track
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
+from rclpy.clock import Clock as RclpyClock
+from rclpy.clock import ClockType
 from rclpy.node import Node
 from rosgraph_msgs.msg import Clock
 from rclpy.time import Time
@@ -128,8 +130,13 @@ class MockSim(Node):
         self.tick_count = 0
         self._build_rays()
         self.publish_track()
-        self.create_timer(5.0, self.publish_track)
-        self.create_timer(self.dt, self.step)
+        # The mock sim makes /clock, so every other node runs on its time. Tick on the
+        # steady clock: a timer on the system clock stops for good when the system
+        # clock jumps, which Docker Desktop on Windows (WSL 2) does every ~30 s on
+        # some laptops, and then the whole pipeline freezes.
+        steady = RclpyClock(clock_type=ClockType.STEADY_TIME)
+        self.create_timer(5.0, self.publish_track, clock=steady)
+        self.create_timer(self.dt, self.step, clock=steady)
 
     # ------------------------------------------------------------------
     def on_cmd(self, msg: ControlCommand):
