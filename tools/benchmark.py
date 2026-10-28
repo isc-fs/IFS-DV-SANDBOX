@@ -160,16 +160,24 @@ def run_scenario(name: str, label: str, stage_args: list[str], config: dict, lap
     print(f"\n=== {name}  ({label})  {' '.join(stage_args) or 'baseline'}  log: {log}", flush=True)
     with open(log, "w") as f:
         proc = subprocess.Popen(launch, stdout=f, stderr=subprocess.STDOUT, start_new_session=True)
+    scorer = None
     try:
+        # Start the scorer BEFORE releasing the car: it starts timing when the
+        # car moves off the start line, and IFSSIM's car is past the line
+        # before a scorer started afterwards is up.
+        scorer = subprocess.Popen(["ros2", "run", "sandbox_tools", "scorer", "--ros-args",
+                                   "-p", "use_sim_time:=true", "-p", f"laps:={laps}", "-p", f"output:={out}",
+                                   "-p", f"label:={label}", "-p", f"scenario:={name}",
+                                   "-p", f"config:='{json.dumps(config)}'",
+                                   "-p", f"start_timeout:={300.0 if real else 120.0}"])
         if sc["sim"] == "ifssim":
-            time.sleep(8.0)                      # let the nodes come up before releasing the car
+            time.sleep(8.0)                      # let the nodes (and the scorer) come up first
             sim("start", "--laps", str(laps + 1))
-        subprocess.run(["ros2", "run", "sandbox_tools", "scorer", "--ros-args",
-                        "-p", "use_sim_time:=true", "-p", f"laps:={laps}", "-p", f"output:={out}",
-                        "-p", f"label:={label}", "-p", f"scenario:={name}",
-                        "-p", f"config:='{json.dumps(config)}'",
-                        "-p", f"start_timeout:={300.0 if real else 120.0}"], check=False)
+        scorer.wait()
     finally:
+        if scorer is not None and scorer.poll() is None:   # interrupted: it writes what it has
+            scorer.send_signal(signal.SIGINT)
+            scorer.wait(timeout=15)
         if sc["sim"] == "ifssim":
             sim("stop")
         os.killpg(proc.pid, signal.SIGINT)
