@@ -51,7 +51,9 @@ the [topic contract](TOPICS.md).
   It's identical to the simulator's world frame.
 - **`base_link`**: the car. x forward, y left, z up. Detections live here,
   because perception only knows where a cone is *relative to the car*.
-  Positive steering turns towards +y (left).
+  On `/control_command`, positive steering turns **right** (towards −y),
+  as on the car. Pure Pursuit gives + = left, so flip the sign when you
+  publish, like the baseline does.
 - **`odom`**: where **odometry** thinks the car is. It starts exactly on the
   `map` frame (at the start line), but odometry drifts, so the longer
   you drive the further `odom` slides away from the truth.

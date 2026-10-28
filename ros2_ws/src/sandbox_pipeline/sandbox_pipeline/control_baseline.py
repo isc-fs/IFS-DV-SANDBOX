@@ -3,7 +3,7 @@
   in : /sandbox/path      nav_msgs/Path (map)
        /sandbox/pose      Odometry (map -> base_link), uses twist.linear.x as speed
   out: /control_command   fs_msgs/ControlCommand at 40 Hz
-                          throttle [0,1], brake [0,1], steering [-1,1] (+ = left)
+                          throttle [0,1], brake [0,1], steering [-1,1] (+ = RIGHT)
 
 Two independent controllers (this split is exactly what the real team
 wants to unify this season):
@@ -82,7 +82,9 @@ class ControlBaseline(Node):
         throttle = float(np.clip(p("kp_speed") * err, 0.0, 1.0))
         brake = float(np.clip(-p("kp_speed") * err, 0.0, 1.0)) if err < -0.5 else 0.0
 
-        self.pub.publish(ControlCommand(throttle=throttle, steering=steering, brake=brake))
+        # /control_command uses the car's convention, + = RIGHT (like IFSSIM and
+        # IFS09-DV-PIPELINE). Pure pursuit gives + = left (y is left): flip it.
+        self.pub.publish(ControlCommand(throttle=throttle, steering=-steering, brake=brake))
         pt = PointStamped()
         pt.header.frame_id = contract.BASE_FRAME
         pt.header.stamp = self.pose.header.stamp

@@ -12,7 +12,7 @@ in `sandbox_tools/contract.py` (`from sandbox_tools import contract`).
 | `/sandbox/pose` | `nav_msgs/Odometry` | `map` → `base_link` | ≥ 10 Hz | slam | `twist.twist.linear.x` = forward speed (control uses it). SLAM also broadcasts TF `map → odom` (its correction) |
 | `/sandbox/map` | `sandbox_msgs/ConeArray` | `map` | ~10 Hz | slam | the whole map every time, not just new cones |
 | `/sandbox/path` | `nav_msgs/Path` | `map` | ~10 Hz | planning | first point = the car, ordered in driving direction |
-| `/control_command` | `fs_msgs/ControlCommand` | n/a | 40 Hz | control | `throttle` [0,1], `brake` [0,1], `steering` [-1,1], **+ = left**. 1 = 22.4° at the wheels |
+| `/control_command` | `fs_msgs/ControlCommand` | n/a | 40 Hz | control | `throttle` [0,1], `brake` [0,1], `steering` [-1,1], **+ = right** (car convention, as in IFSSIM and IFS09). 1 = 22.4° at the wheels |
 
 ## From the simulator
 
