@@ -63,6 +63,8 @@ sb-new() {
     cp -r /sandbox/ros2_ws/templates/my_pipeline "$dst"
     mv "$dst/my_pipeline" "$dst/$pkg"
     mv "$dst/resource/my_pipeline" "$dst/resource/$pkg"
+    # Unique test file name: pytest refuses two test files with the same name.
+    mv "$dst/test/test_my_pipeline.py" "$dst/test/test_$pkg.py"
     grep -rl my_pipeline "$dst" | xargs sed -i "s/my_pipeline/$pkg/g"
     chown -R --reference=/sandbox "$dst"     # owned by you, not root (Linux hosts)
     echo "Created $dst"
