@@ -154,7 +154,8 @@ class MockSim(Node):
         stale = self.t - self.cmd_time > 0.5
         throttle = 0.0 if stale else float(np.clip(self.cmd.throttle, 0.0, 1.0))
         brake = 0.3 if stale else float(np.clip(self.cmd.brake, 0.0, 1.0))
-        steer_cmd = 0.0 if stale else float(np.clip(self.cmd.steering, -1.0, 1.0))
+        # The command is + = right, like IFSSIM. self.steer is + = left (y is left).
+        steer_cmd = 0.0 if stale else -float(np.clip(self.cmd.steering, -1.0, 1.0))
 
         # Steering: first-order lag towards the command.
         self.steer += (steer_cmd * MAX_STEER - self.steer) * min(1.0, dt / 0.08)
@@ -173,7 +174,7 @@ class MockSim(Node):
         self.publish_odom()
         self.publish_imu()
         self.pub_rpm.publish(Float32(data=float(self.v / RPM_TO_MS)))
-        self.pub_steer.publish(Float32(data=float(self.steer)))
+        self.pub_steer.publish(Float32(data=-float(self.steer)))   # + = right, like IFSSIM
         self.pub_brake.publish(Float32(data=float(brake)))
         self.tick_count += 1
         if self.tick_count % self.lidar_every == 0:

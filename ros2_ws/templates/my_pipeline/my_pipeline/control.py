@@ -2,7 +2,7 @@
 
   in : /sandbox/path      nav_msgs/Path (map)
        /sandbox/pose      Odometry (map -> base_link), twist.linear.x = speed
-  out: /control_command   fs_msgs/ControlCommand: throttle [0,1], brake [0,1], steering [-1,1] (+ = left)
+  out: /control_command   fs_msgs/ControlCommand: throttle [0,1], brake [0,1], steering [-1,1] (+ = RIGHT)
 
 Everything inside compute() is yours. Wheelbase 1.627 m, max steer 22.4 deg.
 """
@@ -18,7 +18,10 @@ from sandbox_tools.geometry import Pose2D, world_to_body
 
 
 def compute(path_body: np.ndarray, speed: float):
-    """Path in the car frame + current speed -> (throttle, steering, brake)."""
+    """Path in the car frame + current speed -> (throttle, steering, brake).
+
+    steering: + = left, like y in the car frame. tick() flips it for /control_command.
+    """
     return 0.0, 0.0, 1.0   # stand still. Replace me!
 
 
@@ -38,7 +41,9 @@ class Control(Node):
         pose = Pose2D.from_odometry(self.pose)
         pts = np.array([(p.pose.position.x, p.pose.position.y) for p in self.path.poses])
         throttle, steering, brake = compute(world_to_body(pts, pose), pose.vx)
-        self.pub.publish(ControlCommand(throttle=float(throttle), steering=float(steering), brake=float(brake)))
+        # /control_command uses the car's convention, + = RIGHT (like IFSSIM and
+        # IFS09-DV-PIPELINE). compute() gives + = left (y is left): flip it.
+        self.pub.publish(ControlCommand(throttle=float(throttle), steering=-float(steering), brake=float(brake)))
 
 
 def main():

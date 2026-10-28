@@ -51,9 +51,9 @@ def main():
             elif key == "s":
                 throttle, brake = 0.0, min(1.0, brake + STEP)
             elif key == "a":
-                steer = min(1.0, steer + STEP)    # positive steering = left
+                steer = max(-1.0, steer - STEP)   # /control_command: + = right
             elif key == "d":
-                steer = max(-1.0, steer - STEP)
+                steer = min(1.0, steer + STEP)
             elif key == " ":
                 throttle, steer, brake = 0.0, 0.0, 1.0
             else:
