@@ -5,7 +5,7 @@
 
 Steps (each one is deliberately naive, so there is plenty to improve):
   1. crop       keep points in front of the car, closer than max_range
-  2. ground     drop points near the ground height (flat-ground assumption!)
+  2. ground     find the ground height, drop points near it (flat-ground assumption!)
   3. cluster    put the remaining points on a 2D grid and join touching cells
   4. filter     keep clusters with the size of a cone
   5. colour     yellow cones reflect more than blue ones: split the clusters
@@ -42,7 +42,7 @@ class PerceptionBaseline(Node):
         super().__init__("perception")
         self.declare_parameter("input_topic", contract.LIDAR)
         self.declare_parameter("max_range", 20.0)
-        self.declare_parameter("sensor_height", 1.10)     # LiDAR height above the ground (m)
+        self.declare_parameter("ground_percentile", 20.0) # ground height = this percentile of point z
         self.declare_parameter("min_height", 0.05)        # ignore points lower than this above ground
         self.declare_parameter("max_height", 0.55)        # cones are < 0.51 m tall
         self.declare_parameter("cell_size", 0.15)         # clustering grid (m)
@@ -65,13 +65,12 @@ class PerceptionBaseline(Node):
         r = np.hypot(pts[:, 0], pts[:, 1])
         pts = pts[(pts[:, 0] > 0.0) & (r < p("max_range"))]
 
-        # 2. ground removal: height above a flat ground at -sensor_height
-        h = pts[:, 2] + p("sensor_height")
-        pts = pts[(h > p("min_height")) & (h < p("max_height"))]
+        # 2. ground removal
+        pts, ground_z = self.remove_ground(pts, p("ground_percentile"), p("min_height"), p("max_height"))
 
         # 3. clustering on a 2D occupancy grid
         xy, intensity, top = self.cluster_centers(pts, p("cell_size"), p("min_points"), p("max_extent"),
-                                                  p("sensor_height"))
+                                                  ground_z)
 
         # 5. colour
         colors = self.classify(xy, intensity)
@@ -83,8 +82,23 @@ class PerceptionBaseline(Node):
         self.report(time.perf_counter() - t0)
 
     @staticmethod
+    def remove_ground(pts: np.ndarray, percentile: float, min_height: float, max_height: float):
+        """Keep points between min_height and max_height above a flat ground -> (pts, ground z).
+
+        Most points hit the ground, so a low percentile of their z is the ground
+        height. Measured every scan, not assumed: the mock gives z from the
+        sensor (ground at -1.10), IFSSIM from the car (ground at 0), and the
+        real car may differ again.
+        """
+        if len(pts) == 0:
+            return pts, 0.0
+        ground_z = float(np.percentile(pts[:, 2], percentile))
+        h = pts[:, 2] - ground_z
+        return pts[(h > min_height) & (h < max_height)], ground_z
+
+    @staticmethod
     def cluster_centers(pts: np.ndarray, cell: float, min_points: int, max_extent: float,
-                        sensor_height: float = 1.10):
+                        ground_z: float = -1.10):
         """pts (N,4) x,y,z,intensity -> centres (M,2), mean intensity (M,), top height (M,)."""
         empty = np.empty((0, 2)), np.empty(0), np.empty(0)
         if len(pts) == 0:
@@ -103,7 +117,7 @@ class PerceptionBaseline(Node):
         cy = np.bincount(lab, xy[:, 1], minlength=n + 1) / np.maximum(count, 1)
         ci = np.bincount(lab, pts[:, 3], minlength=n + 1) / np.maximum(count, 1)
         top = np.full(n + 1, -np.inf)
-        np.maximum.at(top, lab, pts[:, 2] + sensor_height)            # highest point above ground
+        np.maximum.at(top, lab, pts[:, 2] - ground_z)                 # highest point above ground
         # 4. size filter (extent of the cluster's cells)
         sl = ndimage.find_objects(labels)
         extent = np.array([0.0] + [max(s[0].stop - s[0].start, s[1].stop - s[1].start) * cell for s in sl])

@@ -12,8 +12,8 @@ from rclpy.qos import QoSProfile, QoSReliabilityPolicy, QoSHistoryPolicy, QoSDur
 MAP_FRAME = "map"            # fixed world frame (= the sim's "odom" frame)
 ODOM_FRAME = "odom"          # odometry frame: smooth but drifts (map -> odom is SLAM's correction)
 BASE_FRAME = "base_link"     # the car
-LIDAR_FRAME = "hesai_lidar"  # LiDAR; same origin/orientation as base_link in sim,
-                             # but 1.10 m above the ground
+LIDAR_FRAME = "hesai_lidar"  # LiDAR, 1.10 m above the ground. Ground at z = -1.10
+                             # on the mock, z = 0 on IFSSIM: find it in the scan
 
 # --- Coming from the simulator (or the mock sim) ----------------------
 LIDAR = "/lidar_points"              # sensor_msgs/PointCloud2  ~10 Hz, frame hesai_lidar

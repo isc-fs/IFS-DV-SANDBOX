@@ -56,8 +56,10 @@ the [topic contract](TOPICS.md).
   `map` frame (at the start line), but odometry drifts, so the longer
   you drive the further `odom` slides away from the truth.
 - **`hesai_lidar`**: the LiDAR. In the sim it has the same orientation as
-  `base_link`, but it sits **1.10 m above the ground**, so the ground is
-  at z ≈ −1.10 in the point cloud.
+  `base_link` and sits **1.10 m above the ground**. Where z = 0 is depends
+  on the source: on the mock the ground is at z ≈ −1.10 (z from the
+  sensor), on IFSSIM at z ≈ 0 (z from the car). Find the ground in the
+  scan instead of assuming a height.
 
 The transforms (TF) between them form a chain, the standard ROS one and
 the same as on the real car:
@@ -118,7 +120,7 @@ steering corrections).
 **Job:** find cones in each LiDAR scan and say where they are (car frame)
 and what colour they are.
 
-**Baseline:** crop → drop ground points (assumes flat ground at −1.10 m)
+**Baseline:** crop → drop ground points (flat ground, height found in each scan)
 → cluster the rest on a 2D grid → keep cone-sized clusters → colour by
 brightness (yellow reflects more than blue), big orange by height.
 

@@ -18,7 +18,7 @@ in `sandbox_tools/contract.py` (`from sandbox_tools import contract`).
 
 | Topic | Type | Frame | Rate | Notes |
 |---|---|---|---|---|
-| `/lidar_points` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | fields `x y z intensity` (float32). Sensor 1.10 m above ground, 120° FOV, ~30 m range. IFSSIM: ~1 M points/scan, mock: ~75 k |
+| `/lidar_points` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | fields `x y z intensity` (float32). Sensor 1.10 m above ground, 120° FOV, ~30 m range. Ground at z ≈ 0 on IFSSIM, z ≈ −1.10 on the mock. IFSSIM: ~16 k points/scan, mock: ~75 k |
 | `/lidar_points/viz` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | lighter copy, for Lichtblick only |
 | `/imu` | `sensor_msgs/Imu` | `imu_link` | 400 Hz (mock 100) | angular velocity + linear acceleration, with noise and bias |
 | `/clock` | `rosgraph_msgs/Clock` | n/a | | simulation time, all nodes use it |
