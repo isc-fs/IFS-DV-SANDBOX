@@ -49,6 +49,17 @@ the car for you) and, for perception and SLAM, on the real car bag.
 
 Compare like with like: run the same setup the references used.
 
+**Your computer changes some scores.** Your code runs at the speed of your
+PC, so latency, % of scans answered and (a bit) lap times depend on it.
+Accuracy scores (detections, position error, drift, map, path) mostly
+don't. The ★ rows were measured on the heads' PC, so:
+- for a fair comparison with the baseline, also score it on your PC:
+  run the same `sb-score` command without your `<you>/...` stages (keep
+  `perception:=gt` and the like) and add `--label baseline-mine`, e.g.
+  `sb-score perception:=gt --label baseline-mine`;
+- the real pipeline can't easily run on your PC: compare with its
+  accuracy scores, and read its latency and times as "on the heads' PC".
+
 | Level | Command (`--scenario ifssim-all`, or `mock-all` while iterating) | Compare your stage score with |
 |---|---|---|
 | 1 Control | `sb-score perception:=gt control:=<you>/control` | ★ baseline `GT/base/base/base` and the real pipeline's Control |
