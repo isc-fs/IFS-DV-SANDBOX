@@ -36,6 +36,9 @@ with `--label alice`). The table is also written to
 - **Overall** = 100 × reference time / your time. The reference is the real
   pipeline when it has a run on that test (otherwise the baseline). So 100 =
   as fast as the real pipeline, more than 100 = faster.
+  On the mock, Overall only measures lap time on a simplified car with
+  unlimited grip, so the baseline beats the real pipeline there. IFSSIM and
+  the car bag are the tests that count.
 
 ## Which test for which level
 
