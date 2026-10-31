@@ -33,7 +33,7 @@ scratch, or copy the baseline and improve it: both are fine.
 
 ## Level 0: drive it, look at it, break it  *(½ day)*
 
-1. `sb-launch sim:=mock`. Watch a full lap in Lichtblick with the
+1. `sb-launch sim:=mock`. Watch a full lap in Foxglove with the
    `sandbox.json` layout.
 2. Find each stage's output in the 3D panel: LiDAR points, detections
    (tall cones), map (short cones), ground truth (grey), path, lookahead
@@ -91,7 +91,7 @@ realistic (`sb-score ... --gt-noise`: `position_noise 0.1`, `miss_rate 0.2`,
 `swap_rate 0.05`).
 
 **Experiments**
-- Plot your path vs the baseline's (Lichtblick, both runs, or record
+- Plot your path vs the baseline's (Foxglove, both runs, or record
   bags). Which is smoother? Does control behave differently with each?
 - Try the other tracks (`sim tracks` lists them,
   `sb-launch sim:=mock track:=...`).

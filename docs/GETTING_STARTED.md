@@ -16,7 +16,7 @@ binary.
 |---|---|---|
 | **Git** | [git-scm.com](https://git-scm.com/download/win) (default options) | `sudo apt install git` |
 | **Docker** | [Docker Desktop](https://www.docker.com/products/docker-desktop/) ≥ 4.34, WSL 2 backend | [Docker Engine](https://docs.docker.com/engine/install/) + compose plugin |
-| **Lichtblick** (visualiser) | Desktop app from [Lichtblick releases](https://github.com/lichtblick-suite/lichtblick/releases) | Same (`.deb` / AppImage) |
+| **Foxglove** (visualiser, the one the real pipeline uses) | Desktop app from [foxglove.dev/download](https://foxglove.dev/download), sign in with a free account | Same (`.deb`) |
 | **IFSSIM** (step 5) | Windows zip from [IFSSIM releases](https://github.com/isc-fs/IFSSIM/releases/latest) | Releases are Windows/Mac only: use the mock sim, or ask the heads |
 
 **Docker Desktop settings (Windows):**
@@ -79,9 +79,9 @@ so you can always test something in seconds. After a few seconds you should see:
 [monitor]: LAP 1   111.15 s   avg 4.7 m/s   max 4.7 m/s   cones hit: 0
 ```
 
-**See it:** open Lichtblick → *Open connection* → *Foxglove WebSocket* →
+**See it:** open Foxglove → *Open connection* → *Foxglove WebSocket* →
 `ws://localhost:8765`. Then *Layout → Import from file* →
-`lichtblick/sandbox.json`. You should see the LiDAR points, the
+`foxglove/sandbox.json`. You should see the LiDAR points, the
 detected cones (tall), the map (short), the path (green line) and plots
 of speed and steering.
 
@@ -149,7 +149,7 @@ before it existed: `git rm --cached -r . && git reset --hard`.
 **`package 'xyz' not found`.** You added a package or an executable:
 run `sb-build`.
 
-**Lichtblick shows nothing.** Check the connection is `ws://localhost:8765`
+**Foxglove shows nothing.** Check the connection is `ws://localhost:8765`
 and that `sb-launch` is running. In the 3D panel, *Display frame* should
 be `map` or `base_link`.
 
@@ -159,6 +159,6 @@ be `map` or `base_link`.
 **Start from a clean build.** `docker compose down -v` deletes the build
 volumes. Then reopen the shell and run `sb-build`.
 
-**Can't use Lichtblick desktop?** There's a web version you can run in
-Docker: `docker compose --profile viz up -d lichtblick`, then
-http://localhost:8080. It builds from source (~5 min, needs ~8 GB of RAM for Docker).
+**Can't install the Foxglove app?** Use the web version,
+[app.foxglove.dev](https://app.foxglove.dev), in Chrome or Edge: same
+connection (`ws://localhost:8765`) and the same layout.

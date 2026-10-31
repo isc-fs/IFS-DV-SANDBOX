@@ -102,7 +102,7 @@ scan answered). Finding the cones comes first: fast and empty scores 0.
 The real pipeline agrees with itself by definition, so its score only shows
 its speed. Match its detections and beat its timing to pass it. Odometry and SLAM scores on the bag = 100 at 0 m of trajectory disagreement, 0 at 2 m.
 **Agreement isn't truth**: the real pipeline also makes mistakes, so look
-at your detections in Lichtblick on top of the point cloud too.
+at your detections in Foxglove on top of the point cloud too.
 
 **The real ground is not where the sim taught you.** The TF says the LiDAR
 is 0.913 m up, but in the data the ground is ~0.5 m below the sensor next

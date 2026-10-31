@@ -66,7 +66,7 @@ We do this together, so problems get fixed in the room.
     car bag (real LiDAR, but open loop);
   - your order.
 - [GETTING_STARTED](GETTING_STARTED.md) steps 1–5: the mock lap in
-  Lichtblick **and** the baseline lapping IFSSIM. Don't stop after the mock:
+  Foxglove **and** the baseline lapping IFSSIM. Don't stop after the mock:
   every block is checked in IFSSIM.
 - Set up your fork ([WORKFLOW.md](WORKFLOW.md#set-up-your-fork-once)) and
   create your package: `sb-new <you>`, `sb-build`, `sb-test`, `sb-check`.
@@ -176,7 +176,7 @@ Each block's minimum, stretch and demo, whichever sprints you do it in.
 - **Minimum:** your `planning.py` + your control lap IFSSIM with
   `perception:=gt --gt-noise`.
 - **Stretch:** the full "done when" (`miss_rate 0.2`, `swap_rate 0.05`).
-- **Demo:** your path vs the baseline path in Lichtblick, and your Planning
+- **Demo:** your path vs the baseline path in Foxglove, and your Planning
   score (Level 2 command in [LEADERBOARD.md](LEADERBOARD.md)). Which path helps
   control more, and why?
 - **PR:** your planning merged into `dev`.

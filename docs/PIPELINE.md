@@ -251,5 +251,5 @@ ros2 param list /control               # its parameters...
 ros2 param set /control target_speed 7.0   # ...and change one live
 ```
 
-In Lichtblick, toggle topics in the 3D panel to compare stages: raw LiDAR
+In Foxglove, toggle topics in the 3D panel to compare stages: raw LiDAR
 vs detections vs map vs ground truth.

@@ -59,7 +59,7 @@ sb-launch sim:=mock      # whole pipeline on a tiny built-in simulator, no Unrea
 ```
 
 Within seconds the car drives a lap. The `monitor` prints lap times
-and cone hits. To see it, connect Lichtblick to `ws://localhost:8765`
+and cone hits. To see it, connect Foxglove to `ws://localhost:8765`
 (see the guide).
 
 With the real simulator (IFSSIM release running on your computer), open
@@ -96,7 +96,7 @@ sim start                              # shell 1: release the brakes
 | `benchmark/reference/` | Reference scores (real pipeline, baseline) | Heads only |
 | `.github/` | CI + branch/issue automation, PR template (same as the real pipeline) | No |
 | `tracks/` | Track CSVs | Add your own |
-| `lichtblick/sandbox.json` | Visualisation layout | If you want |
+| `foxglove/sandbox.json` | Foxglove layout (same viewer as the real pipeline) | If you want |
 
 ---
 

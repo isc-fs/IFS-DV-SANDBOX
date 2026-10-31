@@ -73,7 +73,7 @@ def setup(context):
                 "host": os.environ.get("IFSSIM_HOST", "127.0.0.1"),
                 "port": int(os.environ.get("IFSSIM_PORT", "41451")),
                 "competition_mode": False,          # keeps the /testing_only/* ground truth
-                "lidar_viz_decimation": 4,          # light /lidar_points/viz for Lichtblick
+                "lidar_viz_decimation": 4,          # light /lidar_points/viz for Foxglove
             }],
         ))
     elif sim == "mock":

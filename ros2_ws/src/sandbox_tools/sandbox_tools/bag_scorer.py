@@ -10,7 +10,7 @@ So instead of "correct" we measure:
     real pipeline detected, how many did you detect too (and vice versa),
     and how close is your trajectory to the real SLAM's.
 Agreement isn't truth: the real pipeline makes mistakes too. Look at
-your detections in Lichtblick as well.
+your detections in Foxglove as well.
 
 The reference (the real pipeline's detections + trajectory on this bag) is
 in benchmark/reference/<scenario>-outputs.json. With `record:=true` this

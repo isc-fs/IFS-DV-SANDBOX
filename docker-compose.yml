@@ -48,19 +48,6 @@ services:
     ipc: shareable
     command: ["sleep", "infinity"]
 
-  # OPTIONAL web visualiser (the Lichtblick desktop app is easier, see
-  # docs/GETTING_STARTED.md). Builds from source: ~5 min and needs ~8 GB of
-  # RAM for Docker.   docker compose --profile viz up -d lichtblick
-  # Then open http://localhost:8080 and connect to ws://localhost:8765.
-  lichtblick:
-    profiles: ["viz"]
-    build:
-      context: ./docker/lichtblick
-    image: ifs-lichtblick:sandbox
-    ports:
-      - "127.0.0.1:8080:8080"
-    restart: unless-stopped
-
 volumes:
   ws_build:
   ws_install:
