@@ -89,7 +89,8 @@ of speed and steering.
 
 ## 5. The real simulator (IFSSIM)
 
-1. Unzip the IFSSIM release anywhere and start `IFSSIM.exe`. Leave it running.
+1. Unzip the IFSSIM release anywhere and start `IFSSIM.exe` **from its own
+   folder** (double-click it there). Leave it running.
 2. In a sandbox shell:
    ```bash
    sim status                             # prints a ping reply and the referee state
@@ -132,6 +133,11 @@ sb-score --scenario real-bag          # baseline perception on the real car data
 - Windows: `.env` must say `IFSSIM_HOST=host.docker.internal`.
   Linux: `127.0.0.1`. After editing `.env`, run
   `docker compose up -d --force-recreate sandbox` and open a new shell.
+
+**The car sees no cones and never moves.** IFSSIM was started from another
+folder, so it didn't find its `settings.json` and uses a default LiDAR
+(~560 flat points per scan). Close it and double-click `IFSSIM.exe` in its
+own folder.
 
 **Sim connects but no LiDAR / the car doesn't react.** Check
 `ros2 topic hz /lidar_points`. If nothing arrives, host networking
