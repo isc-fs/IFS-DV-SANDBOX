@@ -24,6 +24,8 @@ setup(
             "slam_baseline = sandbox_pipeline.slam_baseline:main",
             "planning_baseline = sandbox_pipeline.planning_baseline:main",
             "control_baseline = sandbox_pipeline.control_baseline:main",
+            # The real pipeline's code on the sandbox topics (perception:=ifs09)
+            "perception_ifs09 = sandbox_pipeline.perception_ifs09:main",
         ],
     },
 )

@@ -4,12 +4,14 @@
     sb-launch sim:=mock                         # no Unreal needed
     sb-launch perception:=gt                    # skip perception, use ground-truth cones
     sb-launch odometry:=gt                      # perfect odometry (no drift)
+    sb-launch perception:=ifs09                 # the real pipeline's cone detection
     sb-launch control:=off                      # drive yourself: ros2 run sandbox_tools teleop
     sb-launch planning:=alice_pipeline/planning # use your own node
     sb-launch params:=/sandbox/my_params.yaml   # override parameters
 
 Stage values:
     baseline   the simple node in sandbox_pipeline (default)
+    ifs09      the real IFS09-DV-PIPELINE code for that stage (perception only, for now)
     gt         ground truth (perception and odometry only)
     off        don't start this stage
     pkg/exec   any executable from any package (yours!)
@@ -27,6 +29,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
 
 STAGES = ("odometry", "perception", "slam", "planning", "control")
+IFS09_STAGES = ("perception",)   # stages with a <stage>_ifs09 node in sandbox_pipeline
 
 
 def resolve(stage: str, value: str):
@@ -35,6 +38,11 @@ def resolve(stage: str, value: str):
         return None
     if value == "baseline":
         return "sandbox_pipeline", f"{stage}_baseline", stage
+    if value == "ifs09":
+        if stage not in IFS09_STAGES:
+            raise RuntimeError(f"{stage}:=ifs09 does not exist yet (only "
+                               + ", ".join(f"{s}:=ifs09" for s in IFS09_STAGES) + ").")
+        return "sandbox_pipeline", f"{stage}_ifs09", stage
     if value == "gt":
         if stage == "perception":
             return "sandbox_tools", "gt_cones", "gt_cones"
