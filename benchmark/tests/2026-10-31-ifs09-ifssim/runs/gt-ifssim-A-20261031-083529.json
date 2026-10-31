@@ -1,0 +1,56 @@
+{
+  "label": "ctl-gt",
+  "scenario": "ifssim-A",
+  "config": {
+    "odometry": "baseline",
+    "perception": "gt",
+    "slam": "baseline",
+    "planning": "baseline",
+    "control": "baseline"
+  },
+  "date": "2026-10-31T08:36:03",
+  "status": "dnf: car stopped",
+  "laps_required": 1,
+  "lap_times_s": [],
+  "cones_hit": 6,
+  "time_s": null,
+  "odometry": {
+    "error_mean_m": 1.056,
+    "error_max_m": 2.085,
+    "yaw_error_mean_deg": 0.65,
+    "distance_m": 67.5,
+    "drift_percent": 3.086,
+    "score": 0.0
+  },
+  "perception": {
+    "recall": 0.999,
+    "precision": 1.0,
+    "position_error_m": 0.005,
+    "color_accuracy": 1.0,
+    "latency_p95_ms": 16.7,
+    "score": 99.5
+  },
+  "slam": {
+    "pose_error_mean_m": 1.059,
+    "pose_error_max_m": 2.085,
+    "yaw_error_mean_deg": 0.66,
+    "map_recall": 0.929,
+    "map_precision": 0.883,
+    "map_error_m": 0.184,
+    "score": 43.9
+  },
+  "planning": {
+    "centre_offset_mean_m": 0.152,
+    "outside_fraction": 0.006,
+    "length_mean_m": 7.703,
+    "score": 80.0
+  },
+  "control": {
+    "centre_offset_mean_m": 0.816,
+    "centre_offset_max_m": 1.574,
+    "steer_rate_rms": 3.705,
+    "cones_hit": 6,
+    "speed_mean_ms": 2.7,
+    "score": 0.0
+  }
+}
