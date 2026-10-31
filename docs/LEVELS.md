@@ -5,8 +5,9 @@ know why". At each level you replace one stage with your own node. The
 rest stays baseline or ground truth, so the car keeps driving and you
 can see the effect of your change.
 
-**When:** one level per week-long sprint, with perception or localisation over the
-winter holidays. Dates and goals are in **[SPRINTS.md](SPRINTS.md)**.
+**When:** you do control, planning and one of perception or localisation
+(the stage your idea belongs to), in the order you choose. Dates and goals
+are in **[SPRINTS.md](SPRINTS.md)**.
 
 **Measure every level with `sb-score`.** It gives each stage a score and
 compares it with the baseline and the real team pipeline. The command for
@@ -103,6 +104,31 @@ Your node: `alice_pipeline/perception.py` → `find_cones(points)`.
 ```bash
 sb-launch sim:=mock perception:=alice_pipeline/perception
 ```
+
+**Three ways to start**, agree which with the heads:
+
+- **From scratch**, in the skeleton `sb-new` gave you.
+- **From the sandbox baseline**: copy `sandbox_pipeline/perception_baseline.py`
+  into your `perception.py` and change it. Short and simple, easy to read.
+- **From the real pipeline (IFS09)**, if your idea builds on its code:
+  ```bash
+  sb-launch sim:=mock perception:=ifs09   # the real cone detection, unchanged
+  sb-new alice --from ifs09               # your own copy of it, in your package
+  sb-build
+  sb-launch sim:=mock perception:=alice_pipeline/perception
+  ```
+  `--from ifs09` works on the package you already have: it copies the
+  pipeline's `cone_detection` code to `alice_pipeline/alice_cone_detection/`
+  and makes your `perception.py` run it (your old one is kept as
+  `perception_before_ifs09.py`). Put your idea in that code, or as a new
+  strategy in `strategies/my_strategy.py`: the same interface as the real
+  pipeline, so it can go back there next to `base`. `perception:=ifs09`
+  keeps running the original, so you can always compare with it.
+
+  The real perception is colour-blind (its SLAM and planner don't need
+  colour), but the sandbox planner does: the sandbox adds a colour per
+  cone from intensity, like the baseline. The first start after each
+  change takes 10–20 s (Numba compiles the code), then ~2 s.
 
 The mock LiDAR is clean, so **move to IFSSIM as soon as it works there**:
 the real sim has many more points, noise, dropout and real intensities.
