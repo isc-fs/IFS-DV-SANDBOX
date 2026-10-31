@@ -34,10 +34,12 @@ jobs:
             python3-colcon-common-extensions python3-numpy python3-scipy python3-pytest \
             cmake build-essential \
             ros-humble-tf2-ros ros-humble-nav-msgs ros-humble-sensor-msgs-py \
-            ros-humble-visualization-msgs
+            ros-humble-visualization-msgs python3-pip
           rm -rf /var/lib/apt/lists/*
+          pip install --no-cache-dir \
+            "numpy==1.24.4" "scipy==1.15.3" "numba==0.67.0" "scikit-learn==1.7.2"
 
-      - name: Build vendored packages (bridge + fs_msgs)
+      - name: Build vendored packages (bridge + fs_msgs + IFS09 code)
         # shell: bash is required: container jobs default to sh, which has no `source`.
         shell: bash
         run: |

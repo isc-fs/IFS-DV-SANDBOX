@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>ifs09_cone_detection</name>
+  <version>0.0.0</version>
+  <description>
+    The cone detection algorithm of IFS09-DV-PIPELINE (Python package cone_detection),
+    without its ROS lifecycle node. Vendored: see vendor/README.md.
+  </description>
+  <maintainer email="dv@iscracingteam.com">ISC Driverless</maintainer>
+  <license>Apache-2.0</license>
+
+  <exec_depend>python3-numpy</exec_depend>
+  <exec_depend>python3-scipy</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>
