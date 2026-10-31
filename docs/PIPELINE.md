@@ -135,7 +135,8 @@ cones (planner swerves), wrong colours (planner pairs the wrong cones and
 cuts corners).
 
 **Real pipeline:** `cone_detection`: RANSAC ground plane, DBSCAN
-clustering, intensity-based colour, Numba for speed.
+clustering, cone template fit, Numba for speed. No colour: its SLAM and
+planner don't need it. Run it here with `sb-launch perception:=ifs09`.
 
 ### SLAM: `sandbox_pipeline/slam_baseline.py`
 

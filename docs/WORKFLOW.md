@@ -17,6 +17,7 @@ Inside the sandbox shell:
 | `sb-build` | build the workspace. Needed after adding files/nodes/packages, not after editing |
 | `sb-launch [stage:=...]` | start the pipeline, see below |
 | `sb-new <name>` | create `ros2_ws/src/<name>_pipeline` from the template |
+| `sb-new <name> --from ifs09` | start your perception from the real pipeline's code ([Level 3](LEVELS.md#level-3-perception--12-weeks)) |
 | `sb-test` | run every package's unit tests (what CI runs) |
 | `sb-check [stage:=...]` | smoke test: the whole loop drives on the mock (what CI runs) |
 | `sb-score [stage:=...] [--scenario ...]` | benchmark + [leaderboard](LEADERBOARD.md) |
@@ -29,7 +30,8 @@ Inside the sandbox shell:
 |---|---|---|
 | `sim` | `ifssim`, `mock`, `none` (when replaying a bag) | `ifssim` |
 | `track` | CSV in `tracks/` (mock only, IFSSIM uses `sim load`) | `track_20260404_013721.csv` |
-| `odometry`, `perception` | `baseline`, `gt`, `off`, `pkg/exec` | `baseline` |
+| `odometry` | `baseline`, `gt`, `off`, `pkg/exec` | `baseline` |
+| `perception` | `baseline`, `gt`, `ifs09` (the real pipeline's code), `off`, `pkg/exec` | `baseline` |
 | `slam`, `planning`, `control` | `baseline`, `off`, `pkg/exec` | `baseline` |
 | `params` | path to a parameters YAML | none |
 | `skew` | `true` → start `lidar_skewer` | `false` |

@@ -64,7 +64,7 @@ don't. The ★ rows were measured on the heads' PC, so:
 |---|---|---|
 | 1 Control | `sb-score perception:=gt control:=<you>/control` | ★ baseline `GT/base/base/base` and the real pipeline's Control |
 | 2 Planning | `sb-score perception:=gt planning:=<you>/planning control:=<you>/control --gt-noise` | ★ baseline `GT~/base/base/base` and the real pipeline's Planning |
-| 3 Perception | `sb-score perception:=<you>/perception`, **and** `sb-score --scenario real-bag perception:=<you>/perception` | ★ baseline and the real pipeline's Perception |
+| 3 Perception | `sb-score perception:=<you>/perception`, **and** `sb-score --scenario real-bag perception:=<you>/perception` | ★ baseline and the real pipeline's Perception. Started from the IFS09 code? Also run `perception:=ifs09` on your PC: same code before your change, same computer |
 | 4 Localisation | `sb-score odometry:=<you>/odometry`, then `sb-score odometry:=<you>/odometry slam:=<you>/slam`, **and** `sb-score --scenario real-bag odometry:=<you>/odometry perception:=<you>/perception slam:=<you>/slam` | the real pipeline's Odometry (its EKF) and SLAM |
 | 5 Everything | `sb-score perception:=... slam:=... planning:=... control:=...` | the real pipeline's Overall: can you beat 100? |
 

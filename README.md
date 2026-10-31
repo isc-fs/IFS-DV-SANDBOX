@@ -86,12 +86,12 @@ sim start                              # shell 1: release the brakes
 
 | Path | What | Edit it? |
 |---|---|---|
-| `ros2_ws/src/sandbox_pipeline/` | Baseline node of each stage | Read it, copy from it |
+| `ros2_ws/src/sandbox_pipeline/` | Baseline node of each stage (+ `perception_ifs09`, the real perception) | Read it, copy from it |
 | `ros2_ws/src/<you>_pipeline/` | **Your** nodes, created with `sb-new <you>` | Yes! |
 | `ros2_ws/src/sandbox_tools/` | Helpers (contract, geometry, point clouds) + tools: ground truth, mock sim, visualizer, monitor, teleop | Not needed |
 | `ros2_ws/src/sandbox_msgs/` | `Cone` / `ConeArray` messages | No (it's the contract) |
 | `ros2_ws/src/sandbox_bringup/` | `sb-launch` (the launch file that wires stages together) | If you want |
-| `vendor/` | IFSSIM bridge + `fs_msgs`, copied from the team repos | No |
+| `vendor/` | IFSSIM bridge, `fs_msgs` and the IFS09 perception code, copied from the team repos | No (copy it with `sb-new <you> --from ifs09`) |
 | `tools/` | `shell.*` (enter the container), `sim.py` (control the simulator), benchmark + leaderboard | No |
 | `benchmark/reference/` | Reference scores (real pipeline, baseline) | Heads only |
 | `.github/` | CI + branch/issue automation, PR template (same as the real pipeline) | No |
