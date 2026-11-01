@@ -62,14 +62,24 @@ Within seconds the car drives a lap. The `monitor` prints lap times
 and cone hits. To see it, connect Foxglove to `ws://localhost:8765`
 (see the guide).
 
-With the real simulator (IFSSIM release running on your computer), open
-two shells:
+With the real simulator: start `IFSSIM.exe` by double-clicking it in its own
+folder, then open **two terminals on your computer, both in the repo folder**
+(`IFS-DV-SANDBOX`), and run `tools\shell.cmd` (Linux/Mac: `tools/shell.sh`) in
+each. Both are now shells inside the same container:
 
 ```bash
-sim load track_20260404_013723.csv     # shell 1: load a track (A: harder)
-sb-launch                              # shell 2: start the pipeline
-sim start                              # shell 1: release the brakes
+# terminal 1 (sandbox shell)
+sim status                             # check it reaches IFSSIM
+sim load track_20260404_013723.csv     # load a track (track B; A is the harder one)
+
+# terminal 2 (sandbox shell)
+sb-launch                              # start the pipeline, leave it running
+
+# terminal 1 again, once the nodes are up
+sim start                              # release the brakes
 ```
+
+Step by step, with what to expect: [GETTING_STARTED.md, step 5](docs/GETTING_STARTED.md#5-the-real-simulator-ifssim).
 
 ## Where to go next
 

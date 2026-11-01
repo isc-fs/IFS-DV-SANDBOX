@@ -89,19 +89,39 @@ of speed and steering.
 
 ## 5. The real simulator (IFSSIM)
 
-1. Unzip the IFSSIM release anywhere and start `IFSSIM.exe` **from its own
-   folder** (double-click it there). Leave it running.
-2. In a sandbox shell:
+IFSSIM runs on your computer, outside Docker. You need it plus **two
+sandbox shells**, both opened from the repo folder:
+
+| Window | Where you open it | What you run there |
+|---|---|---|
+| IFSSIM | Double-click `IFSSIM.exe` **in its own folder** | nothing, leave it running |
+| Terminal 1 | A terminal on your computer, in the repo folder `IFS-DV-SANDBOX` → `tools\shell.cmd` (Linux/Mac: `tools/shell.sh`) | `sim ...` commands |
+| Terminal 2 | Another terminal, **also in the repo folder** → `tools\shell.cmd` again | `sb-launch` |
+
+`tools\shell.cmd` is a path relative to the repo folder, so `cd` there first:
+
+```powershell
+cd C:\Users\<you>\IFS-DV-SANDBOX      # wherever you cloned it
+tools\shell.cmd                         # prompt changes to root@sandbox
+```
+
+Both terminals end up in the same container (`/sandbox/ros2_ws`), so
+which one runs what only matters for the order:
+
+1. Unzip the IFSSIM release anywhere and double-click `IFSSIM.exe` in that
+   folder (started from elsewhere it doesn't find its `settings.json` and
+   the LiDAR sees no cones). Leave it running.
+2. **Terminal 1** (sandbox shell):
    ```bash
    sim status                             # prints a ping reply and the referee state
    sim load track_20260404_013723.csv     # `sim tracks` lists them
    ```
-3. In a second sandbox shell:
+3. **Terminal 2** (sandbox shell):
    ```bash
    sb-launch
    ```
-   Wait until the nodes are up (a few seconds).
-4. Back in the first shell:
+   Leave it running. Wait until the nodes are up (a few seconds).
+4. **Terminal 1** again:
    ```bash
    sim start
    ```
