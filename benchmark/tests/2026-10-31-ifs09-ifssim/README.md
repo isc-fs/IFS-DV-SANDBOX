@@ -1,5 +1,70 @@
 # IFS09 perception on IFSSIM: test of 2026-10-31
 
+## Update 2026-11-01: after the fixes
+
+The car now drives on IFSSIM. Four things were wrong in the sandbox, not in
+IFS09 (one commit each on this branch):
+
+1. **Control** (`control_baseline.py`): at 5 m/s the IFSSIM car slides
+   wide in the bends (above ~8° of steering it stops turning harder:
+   ~1.5–2 m/s² of grip). With a 3 m minimum lookahead, the car also cut the
+   hairpins. Now it uses the real pipeline's values: 3 m/s, lookahead
+   1.0 m + 0.5 s × v. It's still one constant speed, so slowing down for
+   bends is still the Level 1 exercise.
+2. **Colour** (`geometry.colour_by_side`): IFSSIM's LiDAR intensity can't
+   tell blue from yellow (0 everywhere on the GPU path, and the same value
+   for both colours on the CPU path). Both perceptions fell back to "left
+   of the car = blue", which is wrong in every bend (colour accuracy ~0.6),
+   and the sandbox planner pairs blue with yellow. Now they follow the two
+   track edges from the nearest cross-track pair: 94–98 % right on what
+   IFS09 detects (the left/right rule: 65 %).
+3. **Planner** (`planning_baseline.py`): the big orange gate cones are
+   0.7–0.9 m from the first blue/yellow cones, so the SLAM merges them, and
+   the merged cone can come out orange. The planner skipped orange cones, so
+   the car sometimes never started. Gate cones now count as track edges.
+4. **Mock start** (`mock_sim.py`): on tracks B and C the car started
+   23.6° / 15.4° off the track, next to a cone (mock-B always had 1 cone hit).
+
+And **track B is now the default track**, with A as the hard one: A has a
+tight hairpin on a 3 m wide track.
+
+### IFSSIM, final code (`sb-score --scenario ifssim-all`)
+
+| Setup (perception, rest baseline) | Track B | Track A |
+|---|---|---|
+| ★ real pipeline (re-run 2026-11-01) | 116.7 s, 0 cones | 173.8 s, 0 cones |
+| ground truth | 118.8 s, 0 cones | 176.4 s, 0 cones |
+| noisy ground truth (`--gt-noise`) | 118.8 s, 0 cones | 176.4 s, 0 cones |
+| baseline | 118.8 s, 0 cones | 190.4 s, 6 cones |
+| `ifs09` | 121.0 s, 1 cone | DNF, 6 cones (finished in an earlier run today: 206.9 s, 14 cones) |
+
+Track B works with every perception. Track A with real perception is
+hit-and-miss. The baseline SLAM never corrects the pose (its SLAM score is
+19–37, against 72 for the real pipeline), so the map smears in the
+hairpin. That's the Level 4 exercise, so it's left as it is. The same drift
+makes "3 laps in a row" (Level 1 "done when") hard with the baseline SLAM.
+
+### Latency: the 33 ms reference can't be reproduced
+
+The real pipeline re-run on 2026-11-01 on this PC measures **100 ms p95**
+too (perception score 75.5), the same as `perception:=ifs09` in the sandbox
+(75.5). Detection matches as well (recall 0.823 / 0.821, precision 0.999).
+Where the time goes, on the sim clock:
+
+| From the scan's stamp to... | p50 | p95 |
+|---|---|---|
+| the scan arriving in a Python node | 50 ms | 67 ms |
+| IFS09's cones arriving at the scorer | 83 ms | 100 ms |
+| ground-truth cones (no LiDAR) | 17 ms | 17 ms |
+
+IFS09 itself takes ~19 ms. Most of the rest is the scan getting from the sim
+to ROS, and nobody's perception can remove that. The ★ IFSSIM references
+are now the 2026-11-01 runs.
+
+---
+
+## Original test (2026-10-31)
+
 What was checked, on the heads' PC (Windows 10, GTX 1660 SUPER, Docker
 Desktop), branch `feat/3-ifs09-perception`, IFSSIM local build (`dev`,
 `Saved/StagedBuilds/Windows`), tracks A and B (`ifssim-all`):
@@ -106,4 +171,6 @@ points per scan, mount (0, 0, 0). The car then sees no cones and never moves.
 ## Files
 
 - `runs/`: the JSON of every `sb-score` run above (`ifs09-`, `baseline-`, `gt-`, `student-copy-`).
+- `runs/2026-11-01/`: the update's runs with the final code (`ifs09-`, `real-pipeline-`). The baseline
+  and ★ runs are in `benchmark/reference/`.
 - `compare_copy.py`: the student-copy comparison and timing.

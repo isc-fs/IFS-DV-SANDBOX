@@ -8,7 +8,7 @@
     "planning": "off",
     "control": "off"
   },
-  "date": "2026-10-28T21:15:00",
+  "date": "2026-11-01T12:27:35",
   "status": "finished",
   "laps_required": 0,
   "lap_times_s": [],
@@ -19,16 +19,16 @@
     "processed_fraction": 1.0,
     "detections_per_scan": 1.6,
     "latency_p50_ms": 55.0,
-    "latency_p95_ms": 73.0,
-    "latency_max_ms": 137.5,
+    "latency_p95_ms": 70.0,
+    "latency_max_ms": 128.4,
     "agreement_recall": 0.085,
     "agreement_precision": 0.408,
-    "score": 13.2
+    "score": 13.3
   },
   "odometry": {
     "trajectory_agreement_m": 1.941,
-    "poses": 1808,
-    "score": 3.0
+    "poses": 1806,
+    "score": 2.9
   },
   "slam": {
     "trajectory_agreement_m": null,

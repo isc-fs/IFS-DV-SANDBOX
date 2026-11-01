@@ -76,7 +76,7 @@ so you can always test something in seconds. After a few seconds you should see:
 [monitor]: Started lap timing
 [perception]: processing: mean 4.7 ms, max 9.8 ms per scan
 ...
-[monitor]: LAP 1   111.15 s   avg 4.7 m/s   max 4.7 m/s   cones hit: 0
+[monitor]: LAP 1   124.64 s   avg 2.8 m/s   max 2.8 m/s   cones hit: 0
 ```
 
 **See it:** open Foxglove → *Open connection* → *Foxglove WebSocket* →
