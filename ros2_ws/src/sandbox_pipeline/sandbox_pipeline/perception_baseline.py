@@ -9,8 +9,9 @@ Steps (each one is deliberately naive, so there is plenty to improve):
   3. cluster    put the remaining points on a 2D grid and join touching cells
   4. filter     keep clusters with the size of a cone
   5. colour     yellow cones reflect more than blue ones: split the clusters
-                into "bright" and "dark" by intensity. If they all look alike,
-                fall back to "left of the car = blue, right = yellow".
+                into "bright" and "dark" by intensity. If they all look alike
+                (IFSSIM's LiDAR has no colour information), follow the two track
+                edges from the car: left edge = blue, right edge = yellow.
                 Clusters taller than 0.42 m are the big orange start/finish cones.
 
 Real pipeline equivalent: IFS09-DV-PIPELINE/cone_detection
@@ -33,7 +34,7 @@ from sensor_msgs.msg import PointCloud2
 
 from sandbox_tools import contract
 from sandbox_tools.node_utils import run
-from sandbox_tools.geometry import numpy_to_cones
+from sandbox_tools.geometry import colour_by_side, numpy_to_cones
 from sandbox_tools.pointcloud import read_fields
 
 
@@ -127,7 +128,7 @@ class PerceptionBaseline(Node):
 
     @staticmethod
     def classify(xy: np.ndarray, intensity: np.ndarray) -> np.ndarray:
-        by_side = np.where(xy[:, 1] > 0.0, Cone.BLUE, Cone.YELLOW).astype(np.uint8)
+        by_side = colour_by_side(xy)        # no colour information: follow the track edges
         if len(xy) < 2:
             return by_side
         # Intensity falls with distance squared beyond ~5 m: compensate.

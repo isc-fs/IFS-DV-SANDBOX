@@ -135,7 +135,8 @@ cones (planner swerves), wrong colours (planner pairs the wrong cones and
 cuts corners).
 
 **Real pipeline:** `cone_detection`: RANSAC ground plane, DBSCAN
-clustering, intensity-based colour, Numba for speed.
+clustering, cone template fit, Numba for speed. No colour: its SLAM and
+planner don't need it. Run it here with `sb-launch perception:=ifs09`.
 
 ### SLAM: `sandbox_pipeline/slam_baseline.py`
 
@@ -192,8 +193,9 @@ second.
 **Baseline:** two separate controllers.
 - *Steering*: Pure Pursuit (onboarding exercise 7): aim at the path point
   `Ld` metres ahead, steer along the arc through it.
-- *Speed*: P controller towards one constant speed (5 m/s). It never slows
-  down for corners.
+- *Speed*: P controller towards one constant speed (3 m/s). It never slows
+  down for corners, so the speed is the one the tightest IFSSIM bends allow
+  (faster and the car slides wide).
 - *Safety*: if the path or the pose stops arriving (> 0.5 s old), brake.
 
 **Weak spots:** constant speed, so it's slow on straights and too fast for
@@ -250,5 +252,5 @@ ros2 param list /control               # its parameters...
 ros2 param set /control target_speed 7.0   # ...and change one live
 ```
 
-In Lichtblick, toggle topics in the 3D panel to compare stages: raw LiDAR
+In Foxglove, toggle topics in the 3D panel to compare stages: raw LiDAR
 vs detections vs map vs ground truth.

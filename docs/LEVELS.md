@@ -5,12 +5,18 @@ know why". At each level you replace one stage with your own node. The
 rest stays baseline or ground truth, so the car keeps driving and you
 can see the effect of your change.
 
-**When:** one level per week-long sprint, with perception or localisation over the
-winter holidays. Dates and goals are in **[SPRINTS.md](SPRINTS.md)**.
+**When:** you do control, planning and one of perception or localisation
+(the stage your idea belongs to), in the order you choose. Dates and goals
+are in **[SPRINTS.md](SPRINTS.md)**.
 
 **Measure every level with `sb-score`.** It gives each stage a score and
 compares it with the baseline and the real team pipeline. The command for
 each level is in [LEADERBOARD.md](LEADERBOARD.md#which-test-for-which-level).
+
+**Two tracks.** "In IFSSIM" below means **track B**
+(`track_20260404_013723.csv`, `ifssim-B`): the default, where you test
+and iterate. **Track A** (`track_20260404_013721.csv`, `ifssim-A`) is the
+hard one: a tight hairpin on a 3 m wide track. Go for it when B works.
 
 There's no single right solution. Every level has a **"done when"** so
 you know when you can move on, and **experiments** that show how your
@@ -32,7 +38,7 @@ scratch, or copy the baseline and improve it: both are fine.
 
 ## Level 0: drive it, look at it, break it  *(½ day)*
 
-1. `sb-launch sim:=mock`. Watch a full lap in Lichtblick with the
+1. `sb-launch sim:=mock`. Watch a full lap in Foxglove with the
    `sandbox.json` layout.
 2. Find each stage's output in the 3D panel: LiDAR points, detections
    (tall cones), map (short cones), ground truth (grey), path, lookahead
@@ -65,8 +71,14 @@ sb-launch sim:=mock perception:=gt control:=alice_pipeline/control
 Start with "drive straight slowly", then steering towards the path
 (Pure Pursuit, Stanley, your own idea...), then speed.
 
-**Done when:** in IFSSIM, 3 laps in a row with 0 cones hit, faster than the
-baseline. Iterate on the mock (`sim:=mock`), validate in IFSSIM.
+**Done when:** your control finishes a lap of track B in IFSSIM with 0 cones
+hit, faster than the baseline (118.8 s):
+`sb-score perception:=gt control:=<you>/control --scenario ifssim-B`.
+Iterate on the mock (`sim:=mock`), validate in IFSSIM.
+**Harder:** the same on track A (`--scenario ifssim-A`, baseline 176.4 s).
+
+One lap, not several: over many laps the baseline odometry drifts and the
+map smears (fixing that is Level 4), which isn't your control's fault.
 
 **Experiments**
 - Lookahead vs speed: try short and long lookahead at 4 m/s and at 8 m/s.
@@ -85,12 +97,15 @@ Your node: `alice_pipeline/planning.py` → `plan(cones_body, colors)`.
 sb-launch sim:=mock perception:=gt planning:=alice_pipeline/planning
 ```
 
-**Done when:** 3 clean laps in IFSSIM with ground-truth perception made
-realistic (`sb-score ... --gt-noise`: `position_noise 0.1`, `miss_rate 0.2`,
-`swap_rate 0.05`).
+**Done when:** a lap of track B in IFSSIM with 0 cones hit, with
+ground-truth perception made realistic (`--gt-noise`: `position_noise 0.1`,
+`miss_rate 0.2`, `swap_rate 0.05`):
+`sb-score perception:=gt --gt-noise planning:=<you>/planning control:=<you>/control --scenario ifssim-B`.
+**Harder:** the same on track A (`--scenario ifssim-A`). One lap, as in
+Level 1.
 
 **Experiments**
-- Plot your path vs the baseline's (Lichtblick, both runs, or record
+- Plot your path vs the baseline's (Foxglove, both runs, or record
   bags). Which is smoother? Does control behave differently with each?
 - Try the other tracks (`sim tracks` lists them,
   `sb-launch sim:=mock track:=...`).
@@ -104,12 +119,42 @@ Your node: `alice_pipeline/perception.py` → `find_cones(points)`.
 sb-launch sim:=mock perception:=alice_pipeline/perception
 ```
 
-The mock LiDAR is clean, so **move to IFSSIM as soon as it works there**:
-the real sim has many more points, noise, dropout and real intensities.
+**Three ways to start**, agree which with the heads:
 
-**Done when:** in IFSSIM, 3 laps with ≤ 1 cone hit using your perception
-(everything else baseline), and processing time always under 50 ms per
-scan. **Then the real car:** run it on the real bag
+- **From scratch**, in the skeleton `sb-new` gave you.
+- **From the sandbox baseline**: copy `sandbox_pipeline/perception_baseline.py`
+  into your `perception.py` and change it. Short and simple, easy to read.
+- **From the real pipeline (IFS09)**, if your idea builds on its code:
+  ```bash
+  sb-launch sim:=mock perception:=ifs09   # the real cone detection, unchanged
+  sb-new alice --from ifs09               # your own copy of it, in your package
+  sb-build
+  sb-launch sim:=mock perception:=alice_pipeline/perception
+  ```
+  `--from ifs09` works on the package you already have: it copies the
+  pipeline's `cone_detection` code to `alice_pipeline/alice_cone_detection/`
+  and makes your `perception.py` run it (your old one is kept as
+  `perception_before_ifs09.py`). Put your idea in that code, or as a new
+  strategy in `strategies/my_strategy.py`: the same interface as the real
+  pipeline, so it can go back there next to `base`. `perception:=ifs09`
+  keeps running the original, so you can always compare with it.
+
+  The real perception is colour-blind (its SLAM and planner don't need
+  colour), but the sandbox planner does: the sandbox adds a colour per
+  cone, like the baseline. From intensity when it tells the colours apart
+  (the mock); in IFSSIM it doesn't, so it follows the two track edges
+  (`sandbox_tools/geometry.py`, `colour_by_side`). The first start after each
+  change takes 10–20 s (Numba compiles the code), then ~2 s.
+
+The mock LiDAR is clean, so **move to IFSSIM as soon as it works there**:
+the real sim has many more points, noise and dropout. Its intensity
+doesn't tell blue from yellow, so colour comes from geometry there.
+
+**Done when:** a lap of track B in IFSSIM with ≤ 1 cone hit using your
+perception (everything else baseline:
+`sb-score perception:=<you>/perception --scenario ifssim-B`), and
+processing time always under 50 ms per scan. **Harder:** the same on
+track A (`--scenario ifssim-A`). One lap, as in Level 1. **Then the real car:** run it on the real bag
 (`sb-score --scenario real-bag perception:=...`): it must keep up with
 174 k-point scans and agree with the real pipeline on most cones
 ([LEADERBOARD.md](LEADERBOARD.md#real-car-data-real-bag)).

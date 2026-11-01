@@ -11,7 +11,7 @@ Inside the sandbox shell this is the `sim` command:
     sim reset                  car back to the start line, braked
     sim pause | resume         freeze / unfreeze the simulation
 
-Typical session:   sim load track_20260404_013721.csv  ->  sb-launch (other terminal)  ->  sim start
+Typical session:   sim load track_20260404_013723.csv  ->  sb-launch (other terminal)  ->  sim start
 
 Only needs the Python standard library.
 """

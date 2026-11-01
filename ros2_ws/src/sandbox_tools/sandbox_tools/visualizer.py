@@ -1,4 +1,4 @@
-"""Turns sandbox topics into markers for Lichtblick / Foxglove.
+"""Turns sandbox topics into markers for Foxglove.
 
   /sandbox/cones        -> /sandbox/viz/cones   (what perception sees, tall cones)
   /sandbox/map          -> /sandbox/viz/map     (the map, short cylinders)

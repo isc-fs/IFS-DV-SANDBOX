@@ -4,7 +4,7 @@ Use it when you can't (or don't want to) run the real simulator: on a
 laptop without a GPU, on a train, or to test something in 10 seconds.
 
     sb-launch sim:=mock                         # default track
-    sb-launch sim:=mock track:=track_20260404_013723.csv   # any CSV in tracks/
+    sb-launch sim:=mock track:=track_20260404_013721.csv   # any CSV in tracks/ (A: the hard one)
 
 What it fakes:
   * the car: kinematic bicycle, throttle/brake -> acceleration, steering lag
@@ -68,10 +68,14 @@ def start_pose(xy: np.ndarray, colors: np.ndarray):
     gate = xy[colors == FsCone.ORANGE_BIG]
     center = gate.mean(axis=0) if len(gate) else np.zeros(2)
     blue, yellow = xy[colors == FsCone.BLUE], xy[colors == FsCone.YELLOW]
-    b = blue[np.argmin(np.linalg.norm(blue - center, axis=1))]
-    y = yellow[np.argmin(np.linalg.norm(yellow - center, axis=1))]
-    left = (b - y) / np.linalg.norm(b - y)          # points from right side to left side
-    forward = np.array([left[1], -left[0]])         # left rotated -90 deg
+    b = blue[np.argsort(np.linalg.norm(blue - center, axis=1))[:3]]      # 3 nearest on each edge
+    y = yellow[np.argsort(np.linalg.norm(yellow - center, axis=1))[:3]]
+    # Track direction = the line the edge cones lie on (not the nearest blue-
+    # yellow pair: the two edges' cones can be staggered, which tilts it).
+    forward = np.linalg.svd(np.vstack((b - b.mean(axis=0), y - y.mean(axis=0))))[2][0]
+    left = b.mean(axis=0) - y.mean(axis=0)          # from the right edge to the left edge
+    if forward[0] * left[1] - forward[1] * left[0] < 0:
+        forward = -forward                          # blue must end up on the left
     pos = center - 2.0 * forward
     return pos[0], pos[1], math.atan2(forward[1], forward[0])
 
@@ -79,7 +83,7 @@ def start_pose(xy: np.ndarray, colors: np.ndarray):
 class MockSim(Node):
     def __init__(self):
         super().__init__("mock_sim")
-        self.declare_parameter("track", "track_20260404_013721.csv")
+        self.declare_parameter("track", "track_20260404_013723.csv")
         self.declare_parameter("tracks_dir", os.path.join(os.environ.get("SANDBOX_ROOT", "/sandbox"), "tracks"))
         self.declare_parameter("rate_hz", 100.0)
         self.declare_parameter("lidar_hz", 10.0)

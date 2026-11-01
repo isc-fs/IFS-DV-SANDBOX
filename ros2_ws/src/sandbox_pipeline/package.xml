@@ -17,6 +17,7 @@
   <exec_depend>tf2_ros</exec_depend>
   <exec_depend>python3-numpy</exec_depend>
   <exec_depend>python3-scipy</exec_depend>
+  <exec_depend>ifs09_cone_detection</exec_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>

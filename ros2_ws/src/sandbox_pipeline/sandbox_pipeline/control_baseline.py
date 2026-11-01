@@ -38,10 +38,13 @@ class ControlBaseline(Node):
     def __init__(self):
         super().__init__("control")
         self.declare_parameter("rate_hz", 40.0)
-        self.declare_parameter("target_speed", 5.0)     # m/s
+        # Speed and lookahead = the real pipeline's (IFS09 control params.yaml).
+        # In IFSSIM, faster than ~3 m/s the car slides wide in the bends (it
+        # never slows down for them), and a longer lookahead cuts the hairpins.
+        self.declare_parameter("target_speed", 3.0)     # m/s
         self.declare_parameter("kp_speed", 0.3)
-        self.declare_parameter("lookahead_min", 3.0)    # m
-        self.declare_parameter("lookahead_gain", 0.3)   # s  (Ld = min + gain * v)
+        self.declare_parameter("lookahead_min", 1.0)    # m
+        self.declare_parameter("lookahead_gain", 0.5)   # s  (Ld = min + gain * v)
         self.declare_parameter("wheelbase", 1.627)      # m
         self.declare_parameter("max_steer_deg", 22.4)   # must match the sim / car
         self.declare_parameter("timeout", 0.5)          # s

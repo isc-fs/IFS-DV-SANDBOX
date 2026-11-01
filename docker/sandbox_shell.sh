@@ -53,20 +53,59 @@ if [ -z "$SANDBOX_QUIET" ] && [ -n "$PS1" ]; then
 fi
 
 # Create your own package from the template: sb-new alice -> src/alice_pipeline
+#   sb-new alice --from ifs09   start perception from the real IFS09 code: copies
+#                               it into src/alice_pipeline/alice_cone_detection and
+#                               makes perception.py run it. Works on a package you
+#                               already have too (your old perception.py is kept
+#                               as perception_before_ifs09.py).
 sb-new() {
-    local name="$1"
-    if [[ ! "$name" =~ ^[a-z][a-z0-9_]*$ ]]; then
-        echo "usage: sb-new <name>   (lowercase letters, digits, _), e.g. sb-new alice"; return 1
+    local name="$1" from=""
+    if [[ "$2" == "--from" ]]; then from="$3"; fi
+    if [[ ! "$name" =~ ^[a-z][a-z0-9_]*$ ]] || [[ -n "$2" && "$from" != "ifs09" ]]; then
+        echo "usage: sb-new <name> [--from ifs09]   (name: lowercase letters, digits, _), e.g. sb-new alice"
+        return 1
     fi
     local pkg="${name}_pipeline" dst="/sandbox/ros2_ws/src/${name}_pipeline"
-    if [[ -e "$dst" ]]; then echo "$dst already exists"; return 1; fi
-    cp -r /sandbox/ros2_ws/templates/my_pipeline "$dst"
-    mv "$dst/my_pipeline" "$dst/$pkg"
-    mv "$dst/resource/my_pipeline" "$dst/resource/$pkg"
-    # Unique test file name: pytest refuses two test files with the same name.
-    mv "$dst/test/test_my_pipeline.py" "$dst/test/test_$pkg.py"
-    grep -rl my_pipeline "$dst" | xargs sed -i "s/my_pipeline/$pkg/g"
+    if [[ -e "$dst" && -z "$from" ]]; then echo "$dst already exists"; return 1; fi
+    local existed=yes
+    if [[ ! -e "$dst" ]]; then
+        existed=no
+        cp -r /sandbox/ros2_ws/templates/my_pipeline "$dst"
+        mv "$dst/my_pipeline" "$dst/$pkg"
+        mv "$dst/resource/my_pipeline" "$dst/resource/$pkg"
+        # Unique test file name: pytest refuses two test files with the same name.
+        mv "$dst/test/test_my_pipeline.py" "$dst/test/test_$pkg.py"
+        grep -rl my_pipeline "$dst" | xargs sed -i "s/my_pipeline/$pkg/g"
+        echo "Created $dst"
+    fi
+    if [[ "$from" == "ifs09" ]]; then
+        _sb_add_ifs09 "$name" "$existed" || return 1
+    fi
     chown -R --reference=/sandbox "$dst"     # owned by you, not root (Linux hosts)
-    echo "Created $dst"
     echo "Next: sb-build, then e.g.  sb-launch control:=$pkg/control"
+}
+
+# Copy the vendored IFS09 perception into a student package (see sb-new).
+_sb_add_ifs09() {
+    local name="$1" pkg="${1}_pipeline" code="${1}_cone_detection"
+    local dst="/sandbox/ros2_ws/src/${1}_pipeline" src=/sandbox/vendor/ifs09_cone_detection
+    local tpl=/sandbox/ros2_ws/templates/ifs09
+    if [[ -e "$dst/$code" ]]; then echo "$dst/$code already exists"; return 1; fi
+    # Own copy, renamed so it can't clash with the vendored one
+    # (perception:=ifs09 keeps running the original, to compare with).
+    cp -r "$src/cone_detection" "$dst/$code"
+    cp "$src/LICENSE" "$dst/$code/LICENSE"
+    cp "$tpl/my_strategy.py" "$dst/$code/strategies/my_strategy.py"
+    find "$dst/$code" -name '*.py' -exec sed -i -E \
+        "s/^([[:space:]]*)(from|import) cone_detection([. ])/\1\2 ${code}\3/" {} +
+    if [[ "$2" == "yes" && -f "$dst/$pkg/perception.py" ]]; then   # keep the student's own
+        mv "$dst/$pkg/perception.py" "$dst/$pkg/perception_before_ifs09.py"
+        echo "Your old perception.py is now $pkg/perception_before_ifs09.py"
+    fi
+    sed -e "s/my_cone_detection/$code/g" -e "s/my_pipeline/$pkg/g" "$tpl/perception.py" > "$dst/$pkg/perception.py"
+    sed -i -e "s/my_cone_detection/$code/g" "$dst/$code/strategies/my_strategy.py"
+    # Packages made before --from existed only list one Python package.
+    sed -i -e 's/^from setuptools import setup$/from setuptools import find_packages, setup/' \
+           -e 's/packages=\[package_name\],/packages=find_packages(exclude=["test", "test.*"]),/' "$dst/setup.py"
+    echo "IFS09 perception copied to $dst/$code (start in $pkg/perception.py)"
 }

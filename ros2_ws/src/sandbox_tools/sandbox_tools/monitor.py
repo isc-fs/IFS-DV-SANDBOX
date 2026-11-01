@@ -4,7 +4,7 @@ Prints one line per lap, e.g.
     LAP 2   41.37 s   avg 6.1 m/s   max 8.9 m/s   cones hit: 1
 
 Publishes the same as text on /sandbox/monitor (std_msgs/String) so it
-shows up in Lichtblick. Use it to compare your pipeline against the
+shows up in Foxglove. Use it to compare your pipeline against the
 baseline (or against your teammates).
 
 It also compares /sandbox/pose (whatever SLAM publishes) with the ground

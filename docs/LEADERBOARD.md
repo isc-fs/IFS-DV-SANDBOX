@@ -6,7 +6,7 @@ runs a standard test, measures every stage against the simulator's
 ground truth, and prints a table.
 
 ```bash
-sb-score control:=alice_pipeline/control perception:=gt     # one test (mock-A)
+sb-score control:=alice_pipeline/control perception:=gt     # one test (mock-B)
 sb-score control:=alice_pipeline/control perception:=gt --scenario mock-all
 sb-leaderboard                                              # show the table again
 ```
@@ -37,8 +37,8 @@ with `--label alice`). The table is also written to
   pipeline when it has a run on that test (otherwise the baseline). So 100 =
   as fast as the real pipeline, more than 100 = faster.
   On the mock, Overall only measures lap time on a simplified car with
-  unlimited grip, so the baseline beats the real pipeline there. IFSSIM and
-  the car bag are the tests that count.
+  unlimited grip: a car that's fast there can still slide off in IFSSIM.
+  IFSSIM and the car bag are the tests that count.
 
 ## Which test for which level
 
@@ -48,6 +48,11 @@ IFSSIM must be running: `sb-score` loads the track and starts and stops
 the car for you) and, for perception and SLAM, on the real car bag.
 
 Compare like with like: run the same setup the references used.
+
+**Track B is the default** (`ifssim-B`, `mock-B`: plain `sb-score` runs
+mock-B). **Track A is the hard one** (`ifssim-A`, `mock-A`): a tight
+hairpin on a 3 m wide track, where small errors in colour, pose or
+steering hit cones. `--scenario ifssim-all` runs both.
 
 **Your computer changes some scores.** Your code runs at the speed of your
 PC, so latency, % of scans answered and (a bit) lap times depend on it.
@@ -64,7 +69,7 @@ don't. The ★ rows were measured on the heads' PC, so:
 |---|---|---|
 | 1 Control | `sb-score perception:=gt control:=<you>/control` | ★ baseline `GT/base/base/base` and the real pipeline's Control |
 | 2 Planning | `sb-score perception:=gt planning:=<you>/planning control:=<you>/control --gt-noise` | ★ baseline `GT~/base/base/base` and the real pipeline's Planning |
-| 3 Perception | `sb-score perception:=<you>/perception`, **and** `sb-score --scenario real-bag perception:=<you>/perception` | ★ baseline and the real pipeline's Perception |
+| 3 Perception | `sb-score perception:=<you>/perception`, **and** `sb-score --scenario real-bag perception:=<you>/perception` | ★ baseline and the real pipeline's Perception. Started from the IFS09 code? Also run `perception:=ifs09` on your PC: same code before your change, same computer |
 | 4 Localisation | `sb-score odometry:=<you>/odometry`, then `sb-score odometry:=<you>/odometry slam:=<you>/slam`, **and** `sb-score --scenario real-bag odometry:=<you>/odometry perception:=<you>/perception slam:=<you>/slam` | the real pipeline's Odometry (its EKF) and SLAM |
 | 5 Everything | `sb-score perception:=... slam:=... planning:=... control:=...` | the real pipeline's Overall: can you beat 100? |
 
@@ -102,7 +107,7 @@ scan answered). Finding the cones comes first: fast and empty scores 0.
 The real pipeline agrees with itself by definition, so its score only shows
 its speed. Match its detections and beat its timing to pass it. Odometry and SLAM scores on the bag = 100 at 0 m of trajectory disagreement, 0 at 2 m.
 **Agreement isn't truth**: the real pipeline also makes mistakes, so look
-at your detections in Lichtblick on top of the point cloud too.
+at your detections in Foxglove on top of the point cloud too.
 
 **The real ground is not where the sim taught you.** The TF says the LiDAR
 is 0.913 m up, but in the data the ground is ~0.5 m below the sensor next
