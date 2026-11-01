@@ -26,6 +26,8 @@ import typing
 import numpy as np
 from sandbox_msgs.msg import Cone
 
+from sandbox_tools.geometry import colour_by_side
+
 COLOUR_RADIUS = 0.25   # m: points this close (in xy) to a cone count for its colour
 
 
@@ -68,10 +70,11 @@ def colour_by_intensity(xy: np.ndarray, points: np.ndarray) -> np.ndarray:
 
     Same rule as the sandbox baseline: yellow reflects more than blue, so
     split the cones into bright and dark (compensating for distance). If
-    they all look alike, fall back to the side: left = blue, right = yellow.
+    they all look alike (IFSSIM: no colour information), follow the track
+    edges instead (geometry.colour_by_side).
     """
     xy = np.asarray(xy, dtype=float).reshape(-1, 2)
-    by_side = np.where(xy[:, 1] > 0.0, Cone.BLUE, Cone.YELLOW).astype(np.uint8)
+    by_side = colour_by_side(xy)
     if len(xy) < 2 or len(points) == 0:
         return by_side
     intensity = cone_intensity(xy, points)

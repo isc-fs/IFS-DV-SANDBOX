@@ -26,7 +26,9 @@ Where your idea goes:
     field in on_cloud() and pass it to your strategy.
 
 Colour: the real perception is colour-blind, so the sandbox adds a colour per
-cone from intensity (sandbox_tools/ifs09.py), as for perception:=ifs09.
+cone (sandbox_tools/ifs09.py), as for perception:=ifs09: from intensity when it
+tells blue from yellow (the mock), otherwise by following the two track edges
+(IFSSIM, sandbox_tools/geometry.py colour_by_side).
 """
 import logging
 

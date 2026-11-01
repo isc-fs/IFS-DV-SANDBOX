@@ -127,11 +127,14 @@ sb-launch sim:=mock perception:=alice_pipeline/perception
 
   The real perception is colour-blind (its SLAM and planner don't need
   colour), but the sandbox planner does: the sandbox adds a colour per
-  cone from intensity, like the baseline. The first start after each
+  cone, like the baseline. From intensity when it tells the colours apart
+  (the mock); in IFSSIM it doesn't, so it follows the two track edges
+  (`sandbox_tools/geometry.py`, `colour_by_side`). The first start after each
   change takes 10–20 s (Numba compiles the code), then ~2 s.
 
 The mock LiDAR is clean, so **move to IFSSIM as soon as it works there**:
-the real sim has many more points, noise, dropout and real intensities.
+the real sim has many more points, noise and dropout. Its intensity
+doesn't tell blue from yellow, so colour comes from geometry there.
 
 **Done when:** in IFSSIM, 3 laps with ≤ 1 cone hit using your perception
 (everything else baseline), and processing time always under 50 ms per
