@@ -7,6 +7,7 @@
 Steps:
   1. take the mapped cones near the car and express them in the car frame
   2. pair every blue cone with its nearest yellow cone -> midpoint
+     (big orange gate cones count as blue on the left, yellow on the right)
      (if only one side is visible, offset those cones half a track width inwards)
   3. chain midpoints: start at the car, repeatedly jump to the closest
      midpoint ahead that doesn't turn too sharply
@@ -60,7 +61,14 @@ class PlanningBaseline(Node):
         near = (np.hypot(body[:, 0], body[:, 1]) < self.get_parameter("horizon").value) & (body[:, 0] > -2.0)
         body, colors = body[near], colors[near]
 
-        mids = self.midpoints(body[colors == Cone.BLUE], body[colors == Cone.YELLOW])
+        # The big orange cones of the start/finish gate are on the track edges
+        # too: left of the car = left edge. Without them, the gate is a hole
+        # in the path (and the SLAM can merge them with the blue/yellow cones
+        # next to them, which then go orange too).
+        gate = colors == Cone.ORANGE_BIG
+        left = (colors == Cone.BLUE) | (gate & (body[:, 1] > 0.0))
+        right = (colors == Cone.YELLOW) | (gate & (body[:, 1] <= 0.0))
+        mids = self.midpoints(body[left], body[right])
         path_body = self.chain(mids)
         self.publish(path_body, pose)
 
