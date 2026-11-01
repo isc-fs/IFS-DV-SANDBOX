@@ -193,8 +193,9 @@ second.
 **Baseline:** two separate controllers.
 - *Steering*: Pure Pursuit (onboarding exercise 7): aim at the path point
   `Ld` metres ahead, steer along the arc through it.
-- *Speed*: P controller towards one constant speed (5 m/s). It never slows
-  down for corners.
+- *Speed*: P controller towards one constant speed (3 m/s). It never slows
+  down for corners, so the speed is the one the tightest IFSSIM bends allow
+  (faster and the car slides wide).
 - *Safety*: if the path or the pose stops arriving (> 0.5 s old), brake.
 
 **Weak spots:** constant speed, so it's slow on straights and too fast for
