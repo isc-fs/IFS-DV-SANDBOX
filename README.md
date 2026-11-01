@@ -59,17 +59,27 @@ sb-launch sim:=mock      # whole pipeline on a tiny built-in simulator, no Unrea
 ```
 
 Within seconds the car drives a lap. The `monitor` prints lap times
-and cone hits. To see it, connect Lichtblick to `ws://localhost:8765`
+and cone hits. To see it, connect Foxglove to `ws://localhost:8765`
 (see the guide).
 
-With the real simulator (IFSSIM release running on your computer), open
-two shells:
+With the real simulator: start `IFSSIM.exe` by double-clicking it in its own
+folder, then open **two terminals on your computer, both in the repo folder**
+(`IFS-DV-SANDBOX`), and run `tools\shell.cmd` (Linux/Mac: `tools/shell.sh`) in
+each. Both are now shells inside the same container:
 
 ```bash
-sim load track_20260404_013721.csv     # shell 1: load a track
-sb-launch                              # shell 2: start the pipeline
-sim start                              # shell 1: release the brakes
+# terminal 1 (sandbox shell)
+sim status                             # check it reaches IFSSIM
+sim load track_20260404_013723.csv     # load a track (track B; A is the harder one)
+
+# terminal 2 (sandbox shell)
+sb-launch                              # start the pipeline, leave it running
+
+# terminal 1 again, once the nodes are up
+sim start                              # release the brakes
 ```
+
+Step by step, with what to expect: [GETTING_STARTED.md, step 5](docs/GETTING_STARTED.md#5-the-real-simulator-ifssim).
 
 ## Where to go next
 
@@ -86,17 +96,17 @@ sim start                              # shell 1: release the brakes
 
 | Path | What | Edit it? |
 |---|---|---|
-| `ros2_ws/src/sandbox_pipeline/` | Baseline node of each stage | Read it, copy from it |
+| `ros2_ws/src/sandbox_pipeline/` | Baseline node of each stage (+ `perception_ifs09`, the real perception) | Read it, copy from it |
 | `ros2_ws/src/<you>_pipeline/` | **Your** nodes, created with `sb-new <you>` | Yes! |
 | `ros2_ws/src/sandbox_tools/` | Helpers (contract, geometry, point clouds) + tools: ground truth, mock sim, visualizer, monitor, teleop | Not needed |
 | `ros2_ws/src/sandbox_msgs/` | `Cone` / `ConeArray` messages | No (it's the contract) |
 | `ros2_ws/src/sandbox_bringup/` | `sb-launch` (the launch file that wires stages together) | If you want |
-| `vendor/` | IFSSIM bridge + `fs_msgs`, copied from the team repos | No |
+| `vendor/` | IFSSIM bridge, `fs_msgs` and the IFS09 perception code, copied from the team repos | No (copy it with `sb-new <you> --from ifs09`) |
 | `tools/` | `shell.*` (enter the container), `sim.py` (control the simulator), benchmark + leaderboard | No |
 | `benchmark/reference/` | Reference scores (real pipeline, baseline) | Heads only |
 | `.github/` | CI + branch/issue automation, PR template (same as the real pipeline) | No |
-| `tracks/` | Track CSVs | Add your own |
-| `lichtblick/sandbox.json` | Visualisation layout | If you want |
+| `tracks/` | Track CSVs: `…013723` (B) is the default, `…013721` (A) the hard one | Add your own |
+| `foxglove/sandbox.json` | Foxglove layout (same viewer as the real pipeline) | If you want |
 
 ---
 

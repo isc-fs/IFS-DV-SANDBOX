@@ -17,6 +17,7 @@ Inside the sandbox shell:
 | `sb-build` | build the workspace. Needed after adding files/nodes/packages, not after editing |
 | `sb-launch [stage:=...]` | start the pipeline, see below |
 | `sb-new <name>` | create `ros2_ws/src/<name>_pipeline` from the template |
+| `sb-new <name> --from ifs09` | start your perception from the real pipeline's code ([Level 3](LEVELS.md#level-3-perception--12-weeks)) |
 | `sb-test` | run every package's unit tests (what CI runs) |
 | `sb-check [stage:=...]` | smoke test: the whole loop drives on the mock (what CI runs) |
 | `sb-score [stage:=...] [--scenario ...]` | benchmark + [leaderboard](LEADERBOARD.md) |
@@ -28,8 +29,9 @@ Inside the sandbox shell:
 | Argument | Values | Default |
 |---|---|---|
 | `sim` | `ifssim`, `mock`, `none` (when replaying a bag) | `ifssim` |
-| `track` | CSV in `tracks/` (mock only, IFSSIM uses `sim load`) | `track_20260404_013721.csv` |
-| `odometry`, `perception` | `baseline`, `gt`, `off`, `pkg/exec` | `baseline` |
+| `track` | CSV in `tracks/` (mock only, IFSSIM uses `sim load`) | `track_20260404_013723.csv` |
+| `odometry` | `baseline`, `gt`, `off`, `pkg/exec` | `baseline` |
+| `perception` | `baseline`, `gt`, `ifs09` (the real pipeline's code), `off`, `pkg/exec` | `baseline` |
 | `slam`, `planning`, `control` | `baseline`, `off`, `pkg/exec` | `baseline` |
 | `params` | path to a parameters YAML | none |
 | `skew` | `true` → start `lidar_skewer` | `false` |
@@ -53,6 +55,23 @@ sb-launch control:=alice_pipeline/control
 - C++ node: create an `ament_cmake` package next to yours (`ros2 pkg create
   --build-type ament_cmake --dependencies rclcpp ...`) and launch it the
   same way.
+
+### Tests for your package
+
+`sb-new` also creates `alice_pipeline/test/test_alice_pipeline.py`.
+`sb-test` runs it, and so does CI on every PR. The tests call your plain
+functions (`compute`, `plan`, `find_cones`) with hand-made inputs, so they
+need no simulator and take milliseconds.
+
+- The tests that are already there check the contract (shapes, ranges).
+  They must keep passing.
+- One behaviour test starts skipped. Delete its `@pytest.mark.skip` line
+  once your control steers.
+- Add your own in the same style: a small input where you know the right
+  answer. For example: cones only on one side, a hairpin, a scan with no
+  cones. When you fix a bug, first add a test that shows it, then fix it.
+
+Run only yours: `sb-test -k alice` (or `cd /sandbox/ros2_ws/src && pytest alice_pipeline/test`).
 
 ## Parameters
 

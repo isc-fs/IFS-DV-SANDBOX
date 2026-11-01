@@ -1,0 +1,58 @@
+{
+  "label": "baseline",
+  "scenario": "mock-C",
+  "config": {
+    "odometry": "baseline",
+    "perception": "baseline",
+    "slam": "baseline",
+    "planning": "baseline",
+    "control": "baseline"
+  },
+  "date": "2026-11-01T12:40:12",
+  "status": "finished",
+  "laps_required": 1,
+  "lap_times_s": [
+    143.4
+  ],
+  "cones_hit": 0,
+  "time_s": 143.4,
+  "odometry": {
+    "error_mean_m": 0.234,
+    "error_max_m": 0.405,
+    "yaw_error_mean_deg": 0.12,
+    "distance_m": 402.0,
+    "drift_percent": 0.101,
+    "score": 96.6
+  },
+  "perception": {
+    "recall": 0.836,
+    "precision": 0.999,
+    "position_error_m": 0.05,
+    "color_accuracy": 1.0,
+    "latency_p95_ms": 30.0,
+    "score": 84.8
+  },
+  "slam": {
+    "pose_error_mean_m": 0.234,
+    "pose_error_max_m": 0.405,
+    "yaw_error_mean_deg": 0.12,
+    "map_recall": 0.996,
+    "map_precision": 1.0,
+    "map_error_m": 0.276,
+    "score": 62.8
+  },
+  "planning": {
+    "centre_offset_mean_m": 0.177,
+    "outside_fraction": 0.0,
+    "length_mean_m": 14.972,
+    "score": 88.1
+  },
+  "control": {
+    "centre_offset_mean_m": 0.115,
+    "centre_offset_max_m": 0.462,
+    "steer_rate_rms": 0.46,
+    "cones_hit": 0,
+    "speed_mean_ms": 2.803,
+    "score": 89.2
+  }
+}

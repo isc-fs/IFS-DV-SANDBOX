@@ -1,6 +1,7 @@
 """My PERCEPTION node.   sb-launch perception:=my_pipeline/perception
 
-  in : /lidar_points   PointCloud2 (x, y, z, intensity), frame hesai_lidar, sensor 1.10 m above ground
+  in : /lidar_points   PointCloud2 (x, y, z, intensity), frame hesai_lidar. Ground at z = -1.10 on the mock,
+       z = 0 on IFSSIM: find its height in the scan (see perception_baseline.py)
   out: /sandbox/cones  ConeArray in base_link, header.stamp = stamp of the scan
 
 Everything inside find_cones() is yours. Start from scratch, or copy ideas from

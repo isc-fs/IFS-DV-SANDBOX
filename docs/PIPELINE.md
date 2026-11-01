@@ -51,13 +51,17 @@ the [topic contract](TOPICS.md).
   It's identical to the simulator's world frame.
 - **`base_link`**: the car. x forward, y left, z up. Detections live here,
   because perception only knows where a cone is *relative to the car*.
-  Positive steering turns towards +y (left).
+  On `/control_command`, positive steering turns **right** (towards −y),
+  as on the car. Pure Pursuit gives + = left, so flip the sign when you
+  publish, like the baseline does.
 - **`odom`**: where **odometry** thinks the car is. It starts exactly on the
   `map` frame (at the start line), but odometry drifts, so the longer
   you drive the further `odom` slides away from the truth.
 - **`hesai_lidar`**: the LiDAR. In the sim it has the same orientation as
-  `base_link`, but it sits **1.10 m above the ground**, so the ground is
-  at z ≈ −1.10 in the point cloud.
+  `base_link` and sits **1.10 m above the ground**. Where z = 0 is depends
+  on the source: on the mock the ground is at z ≈ −1.10 (z from the
+  sensor), on IFSSIM at z ≈ 0 (z from the car). Find the ground in the
+  scan instead of assuming a height.
 
 The transforms (TF) between them form a chain, the standard ROS one and
 the same as on the real car:
@@ -118,7 +122,7 @@ steering corrections).
 **Job:** find cones in each LiDAR scan and say where they are (car frame)
 and what colour they are.
 
-**Baseline:** crop → drop ground points (assumes flat ground at −1.10 m)
+**Baseline:** crop → drop ground points (flat ground, height found in each scan)
 → cluster the rest on a 2D grid → keep cone-sized clusters → colour by
 brightness (yellow reflects more than blue), big orange by height.
 
@@ -131,7 +135,8 @@ cones (planner swerves), wrong colours (planner pairs the wrong cones and
 cuts corners).
 
 **Real pipeline:** `cone_detection`: RANSAC ground plane, DBSCAN
-clustering, intensity-based colour, Numba for speed.
+clustering, cone template fit, Numba for speed. No colour: its SLAM and
+planner don't need it. Run it here with `sb-launch perception:=ifs09`.
 
 ### SLAM: `sandbox_pipeline/slam_baseline.py`
 
@@ -188,8 +193,9 @@ second.
 **Baseline:** two separate controllers.
 - *Steering*: Pure Pursuit (onboarding exercise 7): aim at the path point
   `Ld` metres ahead, steer along the arc through it.
-- *Speed*: P controller towards one constant speed (5 m/s). It never slows
-  down for corners.
+- *Speed*: P controller towards one constant speed (3 m/s). It never slows
+  down for corners, so the speed is the one the tightest IFSSIM bends allow
+  (faster and the car slides wide).
 - *Safety*: if the path or the pose stops arriving (> 0.5 s old), brake.
 
 **Weak spots:** constant speed, so it's slow on straights and too fast for
@@ -246,5 +252,5 @@ ros2 param list /control               # its parameters...
 ros2 param set /control target_speed 7.0   # ...and change one live
 ```
 
-In Lichtblick, toggle topics in the 3D panel to compare stages: raw LiDAR
+In Foxglove, toggle topics in the 3D panel to compare stages: raw LiDAR
 vs detections vs map vs ground truth.

@@ -3,7 +3,7 @@
   in : /sandbox/path      nav_msgs/Path (map)
        /sandbox/pose      Odometry (map -> base_link), uses twist.linear.x as speed
   out: /control_command   fs_msgs/ControlCommand at 40 Hz
-                          throttle [0,1], brake [0,1], steering [-1,1] (+ = left)
+                          throttle [0,1], brake [0,1], steering [-1,1] (+ = RIGHT)
 
 Two independent controllers (this split is exactly what the real team
 wants to unify this season):
@@ -38,10 +38,13 @@ class ControlBaseline(Node):
     def __init__(self):
         super().__init__("control")
         self.declare_parameter("rate_hz", 40.0)
-        self.declare_parameter("target_speed", 5.0)     # m/s
+        # Speed and lookahead = the real pipeline's (IFS09 control params.yaml).
+        # In IFSSIM, faster than ~3 m/s the car slides wide in the bends (it
+        # never slows down for them), and a longer lookahead cuts the hairpins.
+        self.declare_parameter("target_speed", 3.0)     # m/s
         self.declare_parameter("kp_speed", 0.3)
-        self.declare_parameter("lookahead_min", 3.0)    # m
-        self.declare_parameter("lookahead_gain", 0.3)   # s  (Ld = min + gain * v)
+        self.declare_parameter("lookahead_min", 1.0)    # m
+        self.declare_parameter("lookahead_gain", 0.5)   # s  (Ld = min + gain * v)
         self.declare_parameter("wheelbase", 1.627)      # m
         self.declare_parameter("max_steer_deg", 22.4)   # must match the sim / car
         self.declare_parameter("timeout", 0.5)          # s
@@ -82,7 +85,9 @@ class ControlBaseline(Node):
         throttle = float(np.clip(p("kp_speed") * err, 0.0, 1.0))
         brake = float(np.clip(-p("kp_speed") * err, 0.0, 1.0)) if err < -0.5 else 0.0
 
-        self.pub.publish(ControlCommand(throttle=throttle, steering=steering, brake=brake))
+        # /control_command uses the car's convention, + = RIGHT (like IFSSIM and
+        # IFS09-DV-PIPELINE). Pure pursuit gives + = left (y is left): flip it.
+        self.pub.publish(ControlCommand(throttle=throttle, steering=-steering, brake=brake))
         pt = PointStamped()
         pt.header.frame_id = contract.BASE_FRAME
         pt.header.stamp = self.pose.header.stamp

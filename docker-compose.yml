@@ -41,25 +41,15 @@ services:
       - ws_build:/sandbox/ros2_ws/build
       - ws_install:/sandbox/ros2_ws/install
       - ws_log:/sandbox/ros2_ws/log
+      # Numba's compiled code (IFS09 perception), kept between restarts.
+      - numba_cache:/numba_cache
     shm_size: 1gb
     # Lets the real-pipeline benchmark container share our shared memory (fast DDS).
     ipc: shareable
     command: ["sleep", "infinity"]
 
-  # OPTIONAL web visualiser (the Lichtblick desktop app is easier, see
-  # docs/GETTING_STARTED.md). Builds from source: ~5 min and needs ~8 GB of
-  # RAM for Docker.   docker compose --profile viz up -d lichtblick
-  # Then open http://localhost:8080 and connect to ws://localhost:8765.
-  lichtblick:
-    profiles: ["viz"]
-    build:
-      context: ./docker/lichtblick
-    image: ifs-lichtblick:sandbox
-    ports:
-      - "127.0.0.1:8080:8080"
-    restart: unless-stopped
-
 volumes:
   ws_build:
   ws_install:
   ws_log:
+  numba_cache:

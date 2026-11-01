@@ -16,7 +16,7 @@ binary.
 |---|---|---|
 | **Git** | [git-scm.com](https://git-scm.com/download/win) (default options) | `sudo apt install git` |
 | **Docker** | [Docker Desktop](https://www.docker.com/products/docker-desktop/) ≥ 4.34, WSL 2 backend | [Docker Engine](https://docs.docker.com/engine/install/) + compose plugin |
-| **Lichtblick** (visualiser) | Desktop app from [Lichtblick releases](https://github.com/lichtblick-suite/lichtblick/releases) | Same (`.deb` / AppImage) |
+| **Foxglove** (visualiser, the one the real pipeline uses) | Desktop app from [foxglove.dev/download](https://foxglove.dev/download), sign in with a free account | Same (`.deb`) |
 | **IFSSIM** (step 5) | Windows zip from [IFSSIM releases](https://github.com/isc-fs/IFSSIM/releases/latest) | Releases are Windows/Mac only: use the mock sim, or ask the heads |
 
 **Docker Desktop settings (Windows):**
@@ -76,12 +76,12 @@ so you can always test something in seconds. After a few seconds you should see:
 [monitor]: Started lap timing
 [perception]: processing: mean 4.7 ms, max 9.8 ms per scan
 ...
-[monitor]: LAP 1   111.15 s   avg 4.7 m/s   max 4.7 m/s   cones hit: 0
+[monitor]: LAP 1   124.64 s   avg 2.8 m/s   max 2.8 m/s   cones hit: 0
 ```
 
-**See it:** open Lichtblick → *Open connection* → *Foxglove WebSocket* →
+**See it:** open Foxglove → *Open connection* → *Foxglove WebSocket* →
 `ws://localhost:8765`. Then *Layout → Import from file* →
-`lichtblick/sandbox.json`. You should see the LiDAR points, the
+`foxglove/sandbox.json`. You should see the LiDAR points, the
 detected cones (tall), the map (short), the path (green line) and plots
 of speed and steering.
 
@@ -89,18 +89,39 @@ of speed and steering.
 
 ## 5. The real simulator (IFSSIM)
 
-1. Unzip the IFSSIM release anywhere and start `IFSSIM.exe`. Leave it running.
-2. In a sandbox shell:
+IFSSIM runs on your computer, outside Docker. You need it plus **two
+sandbox shells**, both opened from the repo folder:
+
+| Window | Where you open it | What you run there |
+|---|---|---|
+| IFSSIM | Double-click `IFSSIM.exe` **in its own folder** | nothing, leave it running |
+| Terminal 1 | A terminal on your computer, in the repo folder `IFS-DV-SANDBOX` → `tools\shell.cmd` (Linux/Mac: `tools/shell.sh`) | `sim ...` commands |
+| Terminal 2 | Another terminal, **also in the repo folder** → `tools\shell.cmd` again | `sb-launch` |
+
+`tools\shell.cmd` is a path relative to the repo folder, so `cd` there first:
+
+```powershell
+cd C:\Users\<you>\IFS-DV-SANDBOX      # wherever you cloned it
+tools\shell.cmd                         # prompt changes to root@sandbox
+```
+
+Both terminals end up in the same container (`/sandbox/ros2_ws`), so
+which one runs what only matters for the order:
+
+1. Unzip the IFSSIM release anywhere and double-click `IFSSIM.exe` in that
+   folder (started from elsewhere it doesn't find its `settings.json` and
+   the LiDAR sees no cones). Leave it running.
+2. **Terminal 1** (sandbox shell):
    ```bash
    sim status                             # prints a ping reply and the referee state
-   sim load track_20260404_013721.csv     # `sim tracks` lists them
+   sim load track_20260404_013723.csv     # `sim tracks` lists them
    ```
-3. In a second sandbox shell:
+3. **Terminal 2** (sandbox shell):
    ```bash
    sb-launch
    ```
-   Wait until the nodes are up (a few seconds).
-4. Back in the first shell:
+   Leave it running. Wait until the nodes are up (a few seconds).
+4. **Terminal 1** again:
    ```bash
    sim start
    ```
@@ -133,6 +154,11 @@ sb-score --scenario real-bag          # baseline perception on the real car data
   Linux: `127.0.0.1`. After editing `.env`, run
   `docker compose up -d --force-recreate sandbox` and open a new shell.
 
+**The car sees no cones and never moves.** IFSSIM was started from another
+folder, so it didn't find its `settings.json` and uses a default LiDAR
+(~560 flat points per scan). Close it and double-click `IFSSIM.exe` in its
+own folder.
+
 **Sim connects but no LiDAR / the car doesn't react.** Check
 `ros2 topic hz /lidar_points`. If nothing arrives, host networking
 isn't working: enable it in Docker Desktop (step 1) and restart Docker Desktop.
@@ -149,7 +175,7 @@ before it existed: `git rm --cached -r . && git reset --hard`.
 **`package 'xyz' not found`.** You added a package or an executable:
 run `sb-build`.
 
-**Lichtblick shows nothing.** Check the connection is `ws://localhost:8765`
+**Foxglove shows nothing.** Check the connection is `ws://localhost:8765`
 and that `sb-launch` is running. In the 3D panel, *Display frame* should
 be `map` or `base_link`.
 
@@ -159,6 +185,6 @@ be `map` or `base_link`.
 **Start from a clean build.** `docker compose down -v` deletes the build
 volumes. Then reopen the shell and run `sb-build`.
 
-**Can't use Lichtblick desktop?** There's a web version you can run in
-Docker: `docker compose --profile viz up -d lichtblick`, then
-http://localhost:8080. It builds from source (~5 min, needs ~8 GB of RAM for Docker).
+**Can't install the Foxglove app?** Use the web version,
+[app.foxglove.dev](https://app.foxglove.dev), in Chrome or Edge: same
+connection (`ws://localhost:8765`) and the same layout.

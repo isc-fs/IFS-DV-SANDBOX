@@ -3,11 +3,11 @@
 
 Inside the sandbox shell this is `sb-score`:
 
-    sb-score                                     # baseline on mock-A
+    sb-score                                     # baseline on mock-B (the default track)
     sb-score control:=alice_pipeline/control     # your control, rest baseline
     sb-score perception:=gt planning:=alice_pipeline/planning --gt-noise
     sb-score --scenario mock-all                 # every mock track
-    sb-score --scenario ifssim-A                 # IFSSIM must be running (loads + starts it for you)
+    sb-score --scenario ifssim-B                 # IFSSIM must be running (loads + starts it for you)
     sb-score --list                              # show scenarios
 
 Each run is saved in results/<label>/ and the leaderboard is printed
@@ -30,12 +30,13 @@ RESULTS = os.path.join(ROOT, "results")
 STAGES = ("odometry", "perception", "slam", "planning", "control")
 
 SCENARIOS = {
+    # B is the default track to test on; A is the hard one (tight hairpin,
+    # 3 m wide), for when B works.
     "mock-A": {"sim": "mock", "track": "track_20260404_013721.csv"},
     "mock-B": {"sim": "mock", "track": "track_20260404_013723.csv"},
     "mock-C": {"sim": "mock", "track": "track_20260404_013725.csv"},
     "ifssim-A": {"sim": "ifssim", "track": "track_20260404_013721.csv"},
     "ifssim-B": {"sim": "ifssim", "track": "track_20260404_013723.csv"},
-    "ifssim-C": {"sim": "ifssim", "track": "track_20260404_013725.csv"},
     # Real car data (no ground truth): perception (+ SLAM) vs the real pipeline.
     "real-bag": {"sim": "bag", "bag": "bags/manual_20260920_154527_indexed.mcap"},
 }
@@ -43,7 +44,7 @@ BAG_TOPICS = ["/lidar_points", "/imu", "/motor_rpm", "/steering_angle", "/tf_sta
 GROUPS = {
     "real": ["real-bag"],
     "mock-all": ["mock-A", "mock-B", "mock-C"],
-    "ifssim-all": ["ifssim-A", "ifssim-B", "ifssim-C"],
+    "ifssim-all": ["ifssim-A", "ifssim-B"],   # not C: in IFSSIM that track runs into a tyre wall
 }
 
 # "Realistic" ground-truth perception used by --gt-noise (Level 2).
@@ -160,16 +161,24 @@ def run_scenario(name: str, label: str, stage_args: list[str], config: dict, lap
     print(f"\n=== {name}  ({label})  {' '.join(stage_args) or 'baseline'}  log: {log}", flush=True)
     with open(log, "w") as f:
         proc = subprocess.Popen(launch, stdout=f, stderr=subprocess.STDOUT, start_new_session=True)
+    scorer = None
     try:
+        # Start the scorer BEFORE releasing the car: it starts timing when the
+        # car moves off the start line, and IFSSIM's car is past the line
+        # before a scorer started afterwards is up.
+        scorer = subprocess.Popen(["ros2", "run", "sandbox_tools", "scorer", "--ros-args",
+                                   "-p", "use_sim_time:=true", "-p", f"laps:={laps}", "-p", f"output:={out}",
+                                   "-p", f"label:={label}", "-p", f"scenario:={name}",
+                                   "-p", f"config:='{json.dumps(config)}'",
+                                   "-p", f"start_timeout:={300.0 if real else 120.0}"])
         if sc["sim"] == "ifssim":
-            time.sleep(8.0)                      # let the nodes come up before releasing the car
+            time.sleep(8.0)                      # let the nodes (and the scorer) come up first
             sim("start", "--laps", str(laps + 1))
-        subprocess.run(["ros2", "run", "sandbox_tools", "scorer", "--ros-args",
-                        "-p", "use_sim_time:=true", "-p", f"laps:={laps}", "-p", f"output:={out}",
-                        "-p", f"label:={label}", "-p", f"scenario:={name}",
-                        "-p", f"config:='{json.dumps(config)}'",
-                        "-p", f"start_timeout:={300.0 if real else 120.0}"], check=False)
+        scorer.wait()
     finally:
+        if scorer is not None and scorer.poll() is None:   # interrupted: it writes what it has
+            scorer.send_signal(signal.SIGINT)
+            scorer.wait(timeout=15)
         if sc["sim"] == "ifssim":
             sim("stop")
         os.killpg(proc.pid, signal.SIGINT)
@@ -191,7 +200,7 @@ def run_scenario(name: str, label: str, stage_args: list[str], config: dict, lap
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("stage_args", nargs="*", help="launch arguments, e.g. control:=alice_pipeline/control")
-    ap.add_argument("--scenario", default="mock-A", help="scenario name or group (see --list)")
+    ap.add_argument("--scenario", default="mock-B", help="scenario name or group (see --list)")
     ap.add_argument("--label", default=os.environ.get("SANDBOX_USER", "me"), help="your name in the leaderboard")
     ap.add_argument("--laps", type=int, default=1)
     ap.add_argument("--gt-noise", action="store_true", help="with perception:=gt, make it realistic (noise, misses, swaps)")

@@ -12,14 +12,14 @@ in `sandbox_tools/contract.py` (`from sandbox_tools import contract`).
 | `/sandbox/pose` | `nav_msgs/Odometry` | `map` → `base_link` | ≥ 10 Hz | slam | `twist.twist.linear.x` = forward speed (control uses it). SLAM also broadcasts TF `map → odom` (its correction) |
 | `/sandbox/map` | `sandbox_msgs/ConeArray` | `map` | ~10 Hz | slam | the whole map every time, not just new cones |
 | `/sandbox/path` | `nav_msgs/Path` | `map` | ~10 Hz | planning | first point = the car, ordered in driving direction |
-| `/control_command` | `fs_msgs/ControlCommand` | n/a | 40 Hz | control | `throttle` [0,1], `brake` [0,1], `steering` [-1,1], **+ = left**. 1 = 22.4° at the wheels |
+| `/control_command` | `fs_msgs/ControlCommand` | n/a | 40 Hz | control | `throttle` [0,1], `brake` [0,1], `steering` [-1,1], **+ = right** (car convention, as in IFSSIM and IFS09). 1 = 22.4° at the wheels |
 
 ## From the simulator
 
 | Topic | Type | Frame | Rate | Notes |
 |---|---|---|---|---|
-| `/lidar_points` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | fields `x y z intensity` (float32). Sensor 1.10 m above ground, 120° FOV, ~30 m range. IFSSIM: ~1 M points/scan, mock: ~75 k |
-| `/lidar_points/viz` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | lighter copy, for Lichtblick only |
+| `/lidar_points` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | fields `x y z intensity` (float32). Sensor 1.10 m above ground, 120° FOV, ~30 m range. Ground at z ≈ 0 on IFSSIM, z ≈ −1.10 on the mock. IFSSIM: ~16 k points/scan, mock: ~75 k |
+| `/lidar_points/viz` | `sensor_msgs/PointCloud2` | `hesai_lidar` | 10 Hz | lighter copy, for the visualiser (Foxglove) only |
 | `/imu` | `sensor_msgs/Imu` | `imu_link` | 400 Hz (mock 100) | angular velocity + linear acceleration, with noise and bias |
 | `/clock` | `rosgraph_msgs/Clock` | n/a | | simulation time, all nodes use it |
 | `/testing_only/odom` | `nav_msgs/Odometry` | `odom` (= `map`) | ~100 Hz | **ground truth** pose + twist. Not available on the real car |

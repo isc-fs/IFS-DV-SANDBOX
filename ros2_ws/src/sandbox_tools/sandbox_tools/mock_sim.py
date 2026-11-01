@@ -4,7 +4,7 @@ Use it when you can't (or don't want to) run the real simulator: on a
 laptop without a GPU, on a train, or to test something in 10 seconds.
 
     sb-launch sim:=mock                         # default track
-    sb-launch sim:=mock track:=skidpad.csv      # any CSV in tracks/
+    sb-launch sim:=mock track:=track_20260404_013721.csv   # any CSV in tracks/ (A: the hard one)
 
 What it fakes:
   * the car: kinematic bicycle, throttle/brake -> acceleration, steering lag
@@ -26,6 +26,8 @@ from fs_msgs.msg import Cone as FsCone
 from fs_msgs.msg import ControlCommand, Track
 from geometry_msgs.msg import TransformStamped
 from nav_msgs.msg import Odometry
+from rclpy.clock import Clock as RclpyClock
+from rclpy.clock import ClockType
 from rclpy.node import Node
 from rosgraph_msgs.msg import Clock
 from rclpy.time import Time
@@ -66,10 +68,14 @@ def start_pose(xy: np.ndarray, colors: np.ndarray):
     gate = xy[colors == FsCone.ORANGE_BIG]
     center = gate.mean(axis=0) if len(gate) else np.zeros(2)
     blue, yellow = xy[colors == FsCone.BLUE], xy[colors == FsCone.YELLOW]
-    b = blue[np.argmin(np.linalg.norm(blue - center, axis=1))]
-    y = yellow[np.argmin(np.linalg.norm(yellow - center, axis=1))]
-    left = (b - y) / np.linalg.norm(b - y)          # points from right side to left side
-    forward = np.array([left[1], -left[0]])         # left rotated -90 deg
+    b = blue[np.argsort(np.linalg.norm(blue - center, axis=1))[:3]]      # 3 nearest on each edge
+    y = yellow[np.argsort(np.linalg.norm(yellow - center, axis=1))[:3]]
+    # Track direction = the line the edge cones lie on (not the nearest blue-
+    # yellow pair: the two edges' cones can be staggered, which tilts it).
+    forward = np.linalg.svd(np.vstack((b - b.mean(axis=0), y - y.mean(axis=0))))[2][0]
+    left = b.mean(axis=0) - y.mean(axis=0)          # from the right edge to the left edge
+    if forward[0] * left[1] - forward[1] * left[0] < 0:
+        forward = -forward                          # blue must end up on the left
     pos = center - 2.0 * forward
     return pos[0], pos[1], math.atan2(forward[1], forward[0])
 
@@ -77,7 +83,7 @@ def start_pose(xy: np.ndarray, colors: np.ndarray):
 class MockSim(Node):
     def __init__(self):
         super().__init__("mock_sim")
-        self.declare_parameter("track", "track_20260404_013721.csv")
+        self.declare_parameter("track", "track_20260404_013723.csv")
         self.declare_parameter("tracks_dir", os.path.join(os.environ.get("SANDBOX_ROOT", "/sandbox"), "tracks"))
         self.declare_parameter("rate_hz", 100.0)
         self.declare_parameter("lidar_hz", 10.0)
@@ -128,8 +134,13 @@ class MockSim(Node):
         self.tick_count = 0
         self._build_rays()
         self.publish_track()
-        self.create_timer(5.0, self.publish_track)
-        self.create_timer(self.dt, self.step)
+        # The mock sim makes /clock, so every other node runs on its time. Tick on the
+        # steady clock: a timer on the system clock stops for good when the system
+        # clock jumps, which Docker Desktop on Windows (WSL 2) does every ~30 s on
+        # some laptops, and then the whole pipeline freezes.
+        steady = RclpyClock(clock_type=ClockType.STEADY_TIME)
+        self.create_timer(5.0, self.publish_track, clock=steady)
+        self.create_timer(self.dt, self.step, clock=steady)
 
     # ------------------------------------------------------------------
     def on_cmd(self, msg: ControlCommand):
@@ -154,7 +165,8 @@ class MockSim(Node):
         stale = self.t - self.cmd_time > 0.5
         throttle = 0.0 if stale else float(np.clip(self.cmd.throttle, 0.0, 1.0))
         brake = 0.3 if stale else float(np.clip(self.cmd.brake, 0.0, 1.0))
-        steer_cmd = 0.0 if stale else float(np.clip(self.cmd.steering, -1.0, 1.0))
+        # The command is + = right, like IFSSIM. self.steer is + = left (y is left).
+        steer_cmd = 0.0 if stale else -float(np.clip(self.cmd.steering, -1.0, 1.0))
 
         # Steering: first-order lag towards the command.
         self.steer += (steer_cmd * MAX_STEER - self.steer) * min(1.0, dt / 0.08)
@@ -173,7 +185,7 @@ class MockSim(Node):
         self.publish_odom()
         self.publish_imu()
         self.pub_rpm.publish(Float32(data=float(self.v / RPM_TO_MS)))
-        self.pub_steer.publish(Float32(data=float(self.steer)))
+        self.pub_steer.publish(Float32(data=-float(self.steer)))   # + = right, like IFSSIM
         self.pub_brake.publish(Float32(data=float(brake)))
         self.tick_count += 1
         if self.tick_count % self.lidar_every == 0:

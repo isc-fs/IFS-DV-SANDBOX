@@ -11,7 +11,7 @@ Inside the sandbox shell this is the `sim` command:
     sim reset                  car back to the start line, braked
     sim pause | resume         freeze / unfreeze the simulation
 
-Typical session:   sim load skidpad.csv  ->  sb-launch (other terminal)  ->  sim start
+Typical session:   sim load track_20260404_013723.csv  ->  sb-launch (other terminal)  ->  sim start
 
 Only needs the Python standard library.
 """
@@ -72,7 +72,6 @@ def main():
     ap.add_argument("command", choices=["status", "tracks", "load", "start", "stop", "reset", "pause", "resume"])
     ap.add_argument("track", nargs="?", help="track CSV name (for load)")
     ap.add_argument("--laps", type=int, default=10)
-    ap.add_argument("--event", default="trackdrive", choices=["trackdrive", "autocross", "acceleration", "skidpad"])
     ap.add_argument("--host", default=os.environ.get("IFSSIM_HOST", "127.0.0.1"))
     ap.add_argument("--port", type=int, default=int(os.environ.get("IFSSIM_PORT", "41451")))
     a = ap.parse_args()
@@ -98,11 +97,11 @@ def main():
         sim.cmd("activateEbs")          # parked until `sim start`
         print("Track loaded, car braked. Start your pipeline, then: sim start")
     elif a.command == "start":
-        print(sim.json(f"setEventType {a.event} {a.laps}"))
+        print(sim.json(f"setEventType trackdrive {a.laps}"))
         sim.cmd("simResume")
         sim.cmd("releaseEbs")
         sim.cmd("enableApiControl 1")
-        print(f"GO: {a.event}, {a.laps} laps. The car now follows /control_command.")
+        print(f"GO: trackdrive, {a.laps} laps. The car now follows /control_command.")
     elif a.command == "stop":
         sim.cmd("activateEbs")
         print("EBS on: car braked and commands ignored. `sim start` to continue.")

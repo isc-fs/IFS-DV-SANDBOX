@@ -1,0 +1,44 @@
+{
+  "label": "real-pipeline",
+  "scenario": "real-bag",
+  "config": {
+    "odometry": "real",
+    "perception": "real",
+    "slam": "real",
+    "planning": "real",
+    "control": "real"
+  },
+  "date": "2026-10-28T20:19:54",
+  "status": "finished",
+  "laps_required": 0,
+  "lap_times_s": [],
+  "cones_hit": null,
+  "time_s": null,
+  "perception": {
+    "scans": 1749,
+    "processed_fraction": 0.962,
+    "detections_per_scan": 7.5,
+    "latency_p50_ms": 91.5,
+    "latency_p95_ms": 201.7,
+    "latency_max_ms": 404.2,
+    "agreement_recall": 1.0,
+    "agreement_precision": 1.0,
+    "score": 74.1
+  },
+  "odometry": {
+    "trajectory_agreement_m": 0.0,
+    "poses": 1879,
+    "score": 100.0
+  },
+  "slam": {
+    "trajectory_agreement_m": 0.0,
+    "poses": 1151,
+    "score": 100.0
+  },
+  "planning": {
+    "score": null
+  },
+  "control": {
+    "score": null
+  }
+}

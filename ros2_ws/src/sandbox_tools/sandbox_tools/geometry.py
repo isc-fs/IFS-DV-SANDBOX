@@ -96,3 +96,74 @@ def numpy_to_cones(header, xy, colors, confidence=None):
     for (x, y), col, cf in zip(np.asarray(xy).reshape(-1, 2), colors, confidence):
         msg.cones.append(Cone(x=float(x), y=float(y), color=int(col), confidence=float(cf)))
     return msg
+
+
+def colour_by_side(xy, max_gap=7.0, max_turn_deg=45.0):
+    """Blue / yellow for cones in the car frame, from geometry only.
+
+    For a perception that can't see colours (IFSSIM's LiDAR has no colour
+    information). "Left of the car = blue" goes wrong in every bend: the
+    outer edge ahead swings over to the other side. So follow each edge
+    instead:
+      1. start from the nearest cone and its partner across the track
+         (2-5 m away, the most side by side): the one further left starts the blue
+         edge, the other the yellow edge. In a hairpin both can be on the
+         same side of the car, which is why "nearest cone on the left" isn't
+         enough;
+      2. step each edge to the closest cone ahead that keeps its direction
+         (turn < max_turn_deg, closer than max_gap: one missed cone is fine).
+    Cones on neither edge: left of the car = blue, right = yellow.
+    """
+    from sandbox_msgs.msg import Cone
+
+    xy = np.asarray(xy, dtype=float).reshape(-1, 2)
+    colors = np.where(xy[:, 1] > 0.0, Cone.BLUE, Cone.YELLOW).astype(np.uint8)
+    seeds = _edge_seeds(xy)
+    if seeds is None:
+        return colors
+    left, right, forward = seeds
+    free = np.ones(len(xy), dtype=bool)
+    edges = []                                       # [colour, last cone, direction]
+    for start, colour in ((left, Cone.BLUE), (right, Cone.YELLOW)):
+        free[start] = False
+        colors[start] = colour
+        edges.append([colour, start, forward.copy()])
+    cos_max = math.cos(math.radians(max_turn_deg))
+    while any(e[2] is not None for e in edges):      # grow both edges, one cone at a time
+        for e in edges:
+            if e[2] is None:
+                continue
+            idx = np.flatnonzero(free)
+            v = xy[idx] - xy[e[1]]
+            d = np.hypot(v[:, 0], v[:, 1])
+            cos_turn = (v @ e[2]) / np.maximum(d, 1e-9)
+            ok = (d > 0.5) & (d < max_gap) & (cos_turn > cos_max)
+            if not ok.any():
+                e[2] = None                          # this edge ends here
+                continue
+            k = np.flatnonzero(ok)[np.argmin((d * (2.0 - cos_turn))[ok])]   # close and straight first
+            free[idx[k]] = False
+            colors[idx[k]] = e[0]
+            e[1], e[2] = idx[k], v[k] / d[k]
+    return colors
+
+
+def _edge_seeds(xy):
+    """(left cone, right cone, forward direction) to start the two edges, or None."""
+    ahead = np.flatnonzero(xy[:, 0] > -2.0)
+    if len(ahead) < 2:
+        return None
+    first = ahead[np.argmin(np.hypot(xy[ahead, 0], xy[ahead, 1]))]
+    v = xy[ahead] - xy[first]
+    d = np.hypot(v[:, 0], v[:, 1])
+    along = np.abs(v[:, 0]) / np.maximum(d, 1e-9)    # 0 = straight across the car, 1 = one behind the other
+    ok = (d > 2.0) & (d < 5.0) & (along < 0.8)
+    if not ok.any():
+        return None
+    # The most "across" one: in a hairpin the next cone on the SAME edge can be
+    # as close as the one across the track, but it's further ahead.
+    partner = ahead[np.flatnonzero(ok)[np.argmin(along[ok])]]
+    left, right = (first, partner) if xy[first, 1] > xy[partner, 1] else (partner, first)
+    w = xy[left] - xy[right]
+    forward = np.array([w[1], -w[0]]) / np.hypot(w[0], w[1])   # perpendicular to the pair
+    return left, right, (forward if forward[0] >= 0 else -forward)
