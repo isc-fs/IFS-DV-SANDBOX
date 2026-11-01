@@ -140,7 +140,7 @@ sb-score perception:=alice_pipeline/perception planning:=alice_pipeline/planning
          control:=alice_pipeline/control --scenario ifssim-all
 ```
 
-- **Minimum:** one clean lap in IFSSIM, no ground truth.
+- **Minimum:** one clean lap of track B in IFSSIM, no ground truth. Then track A.
 - **Stretch:** speed, then an Overall score over 100 (faster than the real pipeline).
 - **Final race (Sat 16 Jan):** unseen track, your full pipeline vs the real
   pipeline on the leaderboard.
@@ -173,7 +173,7 @@ Each block's minimum, stretch and demo, whichever sprints you do it in.
 
 [Level 2](LEVELS.md#level-2-planning--1-week).
 
-- **Minimum:** your `planning.py` + your control lap IFSSIM with
+- **Minimum:** your `planning.py` + your control lap track B in IFSSIM with
   `perception:=gt --gt-noise`.
 - **Stretch:** the full "done when" (`miss_rate 0.2`, `swap_rate 0.05`).
 - **Demo:** your path vs the baseline path in Foxglove, and your Planning

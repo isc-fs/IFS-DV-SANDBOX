@@ -97,9 +97,12 @@ Your node: `alice_pipeline/planning.py` → `plan(cones_body, colors)`.
 sb-launch sim:=mock perception:=gt planning:=alice_pipeline/planning
 ```
 
-**Done when:** 3 clean laps in IFSSIM with ground-truth perception made
-realistic (`sb-score ... --gt-noise`: `position_noise 0.1`, `miss_rate 0.2`,
-`swap_rate 0.05`).
+**Done when:** a lap of track B in IFSSIM with 0 cones hit, with
+ground-truth perception made realistic (`--gt-noise`: `position_noise 0.1`,
+`miss_rate 0.2`, `swap_rate 0.05`):
+`sb-score perception:=gt --gt-noise planning:=<you>/planning control:=<you>/control --scenario ifssim-B`.
+**Harder:** the same on track A (`--scenario ifssim-A`). One lap, as in
+Level 1.
 
 **Experiments**
 - Plot your path vs the baseline's (Foxglove, both runs, or record
@@ -147,9 +150,11 @@ The mock LiDAR is clean, so **move to IFSSIM as soon as it works there**:
 the real sim has many more points, noise and dropout. Its intensity
 doesn't tell blue from yellow, so colour comes from geometry there.
 
-**Done when:** in IFSSIM, 3 laps with ≤ 1 cone hit using your perception
-(everything else baseline), and processing time always under 50 ms per
-scan. **Then the real car:** run it on the real bag
+**Done when:** a lap of track B in IFSSIM with ≤ 1 cone hit using your
+perception (everything else baseline:
+`sb-score perception:=<you>/perception --scenario ifssim-B`), and
+processing time always under 50 ms per scan. **Harder:** the same on
+track A (`--scenario ifssim-A`). One lap, as in Level 1. **Then the real car:** run it on the real bag
 (`sb-score --scenario real-bag perception:=...`): it must keep up with
 174 k-point scans and agree with the real pipeline on most cones
 ([LEADERBOARD.md](LEADERBOARD.md#real-car-data-real-bag)).
