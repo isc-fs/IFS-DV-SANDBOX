@@ -71,8 +71,14 @@ sb-launch sim:=mock perception:=gt control:=alice_pipeline/control
 Start with "drive straight slowly", then steering towards the path
 (Pure Pursuit, Stanley, your own idea...), then speed.
 
-**Done when:** in IFSSIM, 3 laps in a row with 0 cones hit, faster than the
-baseline. Iterate on the mock (`sim:=mock`), validate in IFSSIM.
+**Done when:** your control finishes a lap of track B in IFSSIM with 0 cones
+hit, faster than the baseline (118.8 s):
+`sb-score perception:=gt control:=<you>/control --scenario ifssim-B`.
+Iterate on the mock (`sim:=mock`), validate in IFSSIM.
+**Harder:** the same on track A (`--scenario ifssim-A`, baseline 176.4 s).
+
+One lap, not several: over many laps the baseline odometry drifts and the
+map smears (fixing that is Level 4), which isn't your control's fault.
 
 **Experiments**
 - Lookahead vs speed: try short and long lookahead at 4 m/s and at 8 m/s.

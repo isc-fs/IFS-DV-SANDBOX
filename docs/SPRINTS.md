@@ -160,12 +160,12 @@ Each block's minimum, stretch and demo, whichever sprints you do it in.
 
 [Level 1](LEVELS.md#level-1-control--1-week).
 
-- **Minimum:** your `control.py` laps IFSSIM with `perception:=gt`
+- **Minimum:** your `control.py` laps track B in IFSSIM with `perception:=gt`
   without hitting cones (any speed). Iterate on the mock, check in IFSSIM.
-- **Stretch:** faster than the baseline (~111 s), with speed that adapts
-  to the bends.
+- **Stretch:** faster than the baseline on track B (118.8 s), with speed
+  that adapts to the bends. Then track A.
 - **Demo:** lap in IFSSIM + your Control score next to the baseline and the
-  real pipeline (`sb-score perception:=gt control:=<you>/control --scenario ifssim-all`).
+  real pipeline (`sb-score perception:=gt control:=<you>/control --scenario ifssim-B`).
   Show one parameter you tuned and what happened.
 - **PR:** your control merged into `dev`.
 
