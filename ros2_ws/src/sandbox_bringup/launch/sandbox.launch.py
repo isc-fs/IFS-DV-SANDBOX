@@ -119,7 +119,7 @@ def setup(context):
 def generate_launch_description():
     args = [
         DeclareLaunchArgument("sim", default_value="ifssim", description="ifssim | mock | none (bag replay)"),
-        DeclareLaunchArgument("track", default_value="track_20260404_013721.csv",
+        DeclareLaunchArgument("track", default_value="track_20260404_013723.csv",
                               description="track CSV for sim:=mock (file in tracks/)"),
         DeclareLaunchArgument("skew", default_value="false", description="publish /lidar_points_skewed"),
         DeclareLaunchArgument("foxglove", default_value="true"),

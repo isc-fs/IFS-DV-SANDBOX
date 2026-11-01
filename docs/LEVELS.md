@@ -13,6 +13,11 @@ are in **[SPRINTS.md](SPRINTS.md)**.
 compares it with the baseline and the real team pipeline. The command for
 each level is in [LEADERBOARD.md](LEADERBOARD.md#which-test-for-which-level).
 
+**Two tracks.** "In IFSSIM" below means **track B**
+(`track_20260404_013723.csv`, `ifssim-B`): the default, where you test
+and iterate. **Track A** (`track_20260404_013721.csv`, `ifssim-A`) is the
+hard one: a tight hairpin on a 3 m wide track. Go for it when B works.
+
 There's no single right solution. Every level has a **"done when"** so
 you know when you can move on, and **experiments** that show how your
 stage affects the others. The experiments teach more than the "done

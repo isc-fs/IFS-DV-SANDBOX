@@ -94,7 +94,7 @@ of speed and steering.
 2. In a sandbox shell:
    ```bash
    sim status                             # prints a ping reply and the referee state
-   sim load track_20260404_013721.csv     # `sim tracks` lists them
+   sim load track_20260404_013723.csv     # `sim tracks` lists them
    ```
 3. In a second sandbox shell:
    ```bash

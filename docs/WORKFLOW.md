@@ -29,7 +29,7 @@ Inside the sandbox shell:
 | Argument | Values | Default |
 |---|---|---|
 | `sim` | `ifssim`, `mock`, `none` (when replaying a bag) | `ifssim` |
-| `track` | CSV in `tracks/` (mock only, IFSSIM uses `sim load`) | `track_20260404_013721.csv` |
+| `track` | CSV in `tracks/` (mock only, IFSSIM uses `sim load`) | `track_20260404_013723.csv` |
 | `odometry` | `baseline`, `gt`, `off`, `pkg/exec` | `baseline` |
 | `perception` | `baseline`, `gt`, `ifs09` (the real pipeline's code), `off`, `pkg/exec` | `baseline` |
 | `slam`, `planning`, `control` | `baseline`, `off`, `pkg/exec` | `baseline` |

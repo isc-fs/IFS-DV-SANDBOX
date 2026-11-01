@@ -3,11 +3,11 @@
 
 Inside the sandbox shell this is `sb-score`:
 
-    sb-score                                     # baseline on mock-A
+    sb-score                                     # baseline on mock-B (the default track)
     sb-score control:=alice_pipeline/control     # your control, rest baseline
     sb-score perception:=gt planning:=alice_pipeline/planning --gt-noise
     sb-score --scenario mock-all                 # every mock track
-    sb-score --scenario ifssim-A                 # IFSSIM must be running (loads + starts it for you)
+    sb-score --scenario ifssim-B                 # IFSSIM must be running (loads + starts it for you)
     sb-score --list                              # show scenarios
 
 Each run is saved in results/<label>/ and the leaderboard is printed
@@ -30,6 +30,8 @@ RESULTS = os.path.join(ROOT, "results")
 STAGES = ("odometry", "perception", "slam", "planning", "control")
 
 SCENARIOS = {
+    # B is the default track to test on; A is the hard one (tight hairpin,
+    # 3 m wide), for when B works.
     "mock-A": {"sim": "mock", "track": "track_20260404_013721.csv"},
     "mock-B": {"sim": "mock", "track": "track_20260404_013723.csv"},
     "mock-C": {"sim": "mock", "track": "track_20260404_013725.csv"},
@@ -198,7 +200,7 @@ def run_scenario(name: str, label: str, stage_args: list[str], config: dict, lap
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("stage_args", nargs="*", help="launch arguments, e.g. control:=alice_pipeline/control")
-    ap.add_argument("--scenario", default="mock-A", help="scenario name or group (see --list)")
+    ap.add_argument("--scenario", default="mock-B", help="scenario name or group (see --list)")
     ap.add_argument("--label", default=os.environ.get("SANDBOX_USER", "me"), help="your name in the leaderboard")
     ap.add_argument("--laps", type=int, default=1)
     ap.add_argument("--gt-noise", action="store_true", help="with perception:=gt, make it realistic (noise, misses, swaps)")

@@ -7,7 +7,7 @@
 #
 #   tools/smoke_test.sh                                   # baseline
 #   tools/smoke_test.sh control:=alice_pipeline/control   # with my control
-#   SMOKE_DURATION=90 tools/smoke_test.sh track:=track_20260404_013723.csv
+#   SMOKE_DURATION=90 tools/smoke_test.sh track:=track_20260404_013721.csv
 set -uo pipefail
 
 DURATION="${SMOKE_DURATION:-40}"

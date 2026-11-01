@@ -66,7 +66,7 @@ With the real simulator (IFSSIM release running on your computer), open
 two shells:
 
 ```bash
-sim load track_20260404_013721.csv     # shell 1: load a track
+sim load track_20260404_013723.csv     # shell 1: load a track (A: harder)
 sb-launch                              # shell 2: start the pipeline
 sim start                              # shell 1: release the brakes
 ```
@@ -95,7 +95,7 @@ sim start                              # shell 1: release the brakes
 | `tools/` | `shell.*` (enter the container), `sim.py` (control the simulator), benchmark + leaderboard | No |
 | `benchmark/reference/` | Reference scores (real pipeline, baseline) | Heads only |
 | `.github/` | CI + branch/issue automation, PR template (same as the real pipeline) | No |
-| `tracks/` | Track CSVs | Add your own |
+| `tracks/` | Track CSVs: `…013723` (B) is the default, `…013721` (A) the hard one | Add your own |
 | `foxglove/sandbox.json` | Foxglove layout (same viewer as the real pipeline) | If you want |
 
 ---

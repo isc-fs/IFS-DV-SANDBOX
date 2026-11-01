@@ -6,7 +6,7 @@ runs a standard test, measures every stage against the simulator's
 ground truth, and prints a table.
 
 ```bash
-sb-score control:=alice_pipeline/control perception:=gt     # one test (mock-A)
+sb-score control:=alice_pipeline/control perception:=gt     # one test (mock-B)
 sb-score control:=alice_pipeline/control perception:=gt --scenario mock-all
 sb-leaderboard                                              # show the table again
 ```
@@ -48,6 +48,11 @@ IFSSIM must be running: `sb-score` loads the track and starts and stops
 the car for you) and, for perception and SLAM, on the real car bag.
 
 Compare like with like: run the same setup the references used.
+
+**Track B is the default** (`ifssim-B`, `mock-B`: plain `sb-score` runs
+mock-B). **Track A is the hard one** (`ifssim-A`, `mock-A`): a tight
+hairpin on a 3 m wide track, where small errors in colour, pose or
+steering hit cones. `--scenario ifssim-all` runs both.
 
 **Your computer changes some scores.** Your code runs at the speed of your
 PC, so latency, % of scans answered and (a bit) lap times depend on it.
