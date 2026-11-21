@@ -13,6 +13,16 @@ in `sandbox_tools/contract.py` (`from sandbox_tools import contract`).
 | `/sandbox/map` | `sandbox_msgs/ConeArray` | `map` | ~10 Hz | slam | the whole map every time, not just new cones |
 | `/sandbox/path` | `nav_msgs/Path` | `map` | ~10 Hz | planning | first point = the car, ordered in driving direction |
 | `/control_command` | `fs_msgs/ControlCommand` | n/a | 40 Hz | control | `throttle` [0,1], `brake` [0,1], `steering` [-1,1], **+ = right** (car convention, as in IFSSIM and IFS09). 1 = 22.4° at the wheels |
+| `/motor_command` | `sandbox_msgs/MotorCommand` | n/a | 40 Hz | powertrain (or your control) | `left`, `right` torque of the two rear motors, normalised to max forward torque: `1` = full drive, `0` = coast, `-0.2` = full regen (regen is limited to 20 % of forward torque). Made from `/control_command` by the `powertrain` node |
+
+### Rear motors, regen and electronic differential
+
+The car has two rear motors, one per wheel. You can stay with `/control_command` (easy) or take over the motors (full):
+
+- **Easy (default).** Publish `/control_command`. The `powertrain` node turns it into `/motor_command`: `brake` gives regen first (max 20 % of forward torque, faded out below 2 m/s), and the electronic differential gives less torque to the inner wheel in a turn (the sum stays the same). Switch it off with `sb-launch ediff:=false` (both motors get the same torque, like an open differential) or at runtime with `ros2 param set /powertrain ediff false`.
+- **Full.** `sb-launch powertrain:=false` and publish `/motor_command` yourself, for your own torque vectoring and regen strategy. You still publish `/control_command` for steering and the friction brake.
+- `sandbox_tools.powertrain.split_torque` is the same maths as a plain function, if you want to reuse it.
+- In the mock sim each motor pushes its own wheel: a torque difference is a yaw moment that turns the car, and `/motor_rpm_left` / `/motor_rpm_right` show the wheel speeds. With the e-diff on, the outer motor helps the car rotate; with equal torques (`ediff:=false`) it does not. IFSSIM has one drivetrain: the bridge ignores `/motor_command` and keeps using `/control_command`, so there the two motors are not modelled yet.
 
 ## From the simulator
 

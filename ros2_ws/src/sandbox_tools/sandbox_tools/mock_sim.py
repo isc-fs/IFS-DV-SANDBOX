@@ -7,7 +7,10 @@ laptop without a GPU, on a train, or to test something in 10 seconds.
     sb-launch sim:=mock track:=track_20260404_013721.csv   # any CSV in tracks/ (A: the hard one)
 
 What it fakes:
-  * the car: kinematic bicycle, throttle/brake -> acceleration, steering lag
+  * the car: kinematic bicycle, torque of the 2 rear motors (/motor_command, regen
+    included) + friction brake -> acceleration, steering lag. Each motor
+    pushes its own wheel, so a torque difference turns the car (yaw moment) and shows
+    in /motor_rpm_left and /motor_rpm_right
   * /lidar_points: ray-cast against flat ground + cones (116 channels, 120 deg FOV)
   * /imu, /motor_rpm, /steering_angle, /brake_pressure, /testing_only/odom,
     /testing_only/track, /clock, sensor TFs
@@ -30,6 +33,7 @@ from rclpy.clock import Clock as RclpyClock
 from rclpy.clock import ClockType
 from rclpy.node import Node
 from rosgraph_msgs.msg import Clock
+from sandbox_msgs.msg import MotorCommand
 from rclpy.time import Time
 from sensor_msgs.msg import Imu, PointCloud2
 from std_msgs.msg import Float32, Header
@@ -39,6 +43,7 @@ from sandbox_tools import contract
 from sandbox_tools.node_utils import run
 from sandbox_tools.geometry import quat_from_yaw
 from sandbox_tools.pointcloud import make_cloud
+from sandbox_tools.powertrain import TORQUE_MAX, TORQUE_MIN, split_torque
 
 COLOR_NAMES = {"yellow": FsCone.YELLOW, "blue": FsCone.BLUE,
                "big_orange": FsCone.ORANGE_BIG, "orange_big": FsCone.ORANGE_BIG,
@@ -92,6 +97,12 @@ class MockSim(Node):
         self.declare_parameter("lidar_noise", 0.03)
         self.declare_parameter("max_accel", 8.0)
         self.declare_parameter("max_decel", 12.0)
+        # Two rear motors. A torque difference between the wheels is a yaw moment:
+        # M = (F_right - F_left) * track / 2, F = torque * max_accel * mass / 2 per wheel.
+        self.declare_parameter("mass", 230.0)            # kg
+        self.declare_parameter("yaw_inertia", 110.0)     # kg m^2
+        self.declare_parameter("track", 1.2)             # m, rear
+        self.declare_parameter("yaw_damping_tau", 0.15)  # s, how fast the tyres cancel the extra yaw rate
 
         track = self.get_parameter("track").value
         path = track if os.path.isabs(track) else os.path.join(self.get_parameter("tracks_dir").value, track)
@@ -101,8 +112,11 @@ class MockSim(Node):
         self.steer = 0.0
         self.accel = 0.0
         self.yaw_rate = 0.0
+        self.yaw_extra = 0.0     # yaw rate added by the torque difference between the motors
         self.cmd = ControlCommand()
         self.cmd_time = -1e9
+        self.motor = MotorCommand()
+        self.motor_time = -1e9
         self.t = 0.0
         self.rng = np.random.default_rng(0)
         self.get_logger().info(f"Mock sim on {path} ({len(self.cones_xy)} cones)")
@@ -115,9 +129,12 @@ class MockSim(Node):
         self.pub_lidar_viz = self.create_publisher(PointCloud2, contract.LIDAR + "/viz", contract.SENSOR_QOS)
         self.pub_track = self.create_publisher(Track, contract.GT_TRACK, contract.LATCHED_QOS)
         self.pub_rpm = self.create_publisher(Float32, "/motor_rpm", contract.SENSOR_QOS)
+        self.pub_rpm_l = self.create_publisher(Float32, "/motor_rpm_left", contract.SENSOR_QOS)
+        self.pub_rpm_r = self.create_publisher(Float32, "/motor_rpm_right", contract.SENSOR_QOS)
         self.pub_steer = self.create_publisher(Float32, "/steering_angle", contract.SENSOR_QOS)
         self.pub_brake = self.create_publisher(Float32, "/brake_pressure", contract.SENSOR_QOS)
         self.create_subscription(ControlCommand, contract.CONTROL, self.on_cmd, 10)
+        self.create_subscription(MotorCommand, contract.MOTOR_COMMAND, self.on_motor, 10)
 
         self.static_tf = StaticTransformBroadcaster(self)
         tfs = []
@@ -147,6 +164,10 @@ class MockSim(Node):
         self.cmd = msg
         self.cmd_time = self.t
 
+    def on_motor(self, msg: MotorCommand):
+        self.motor = msg
+        self.motor_time = self.t
+
     def header(self, frame: str) -> Header:
         return Header(frame_id=frame, stamp=Time(nanoseconds=int(self.t * 1e9)).to_msg())
 
@@ -163,20 +184,39 @@ class MockSim(Node):
         dt = self.dt
         self.t += dt
         stale = self.t - self.cmd_time > 0.5
-        throttle = 0.0 if stale else float(np.clip(self.cmd.throttle, 0.0, 1.0))
+        # Two rear motors: torque per wheel in [-0.2, 1] (negative = regen). If nobody
+        # publishes /motor_command (powertrain:=false and no own node), derive it from the
+        # ControlCommand with a locked axle, so the car still drives.
+        if self.t - self.motor_time < 0.5:
+            t_left, t_right = self.motor.left, self.motor.right
+        elif stale:
+            t_left = t_right = 0.0
+        else:
+            t_left, t_right = split_torque(self.cmd.throttle, self.cmd.brake, 0.0, self.v, ediff=False)
+        t_left = float(np.clip(t_left, TORQUE_MIN, TORQUE_MAX))
+        t_right = float(np.clip(t_right, TORQUE_MIN, TORQUE_MAX))
+        torque = (t_left + t_right) / 2.0
         brake = 0.3 if stale else float(np.clip(self.cmd.brake, 0.0, 1.0))
         # The command is + = right, like IFSSIM. self.steer is + = left (y is left).
         steer_cmd = 0.0 if stale else -float(np.clip(self.cmd.steering, -1.0, 1.0))
 
         # Steering: first-order lag towards the command.
         self.steer += (steer_cmd * MAX_STEER - self.steer) * min(1.0, dt / 0.08)
-        # Longitudinal: motor, regen brake, drag, rolling resistance.
-        a = (throttle * self.get_parameter("max_accel").value
+        # Longitudinal: motors (+ regen), friction brake, drag, rolling resistance.
+        a = (torque * self.get_parameter("max_accel").value
              - brake * self.get_parameter("max_decel").value
              - 0.02 * self.v * self.v - (0.3 if self.v > 0.05 else 0.0))
         self.v = max(0.0, self.v + a * dt)
         self.accel = a if self.v > 0.0 else 0.0
-        self.yaw_rate = self.v * math.tan(self.steer) / WHEELBASE
+        # Each motor pushes its own wheel: the difference is a yaw moment that the tyres
+        # damp with a first-order lag. Equal torques (locked axle or open diff) add nothing.
+        p = lambda name: self.get_parameter(name).value  # noqa: E731
+        moment = (t_right - t_left) * p("max_accel") * p("mass") / 2.0 * p("track") / 2.0
+        tau = p("yaw_damping_tau")
+        self.yaw_extra += (moment / p("yaw_inertia") * tau - self.yaw_extra) * min(1.0, dt / tau)
+        if self.v < 0.5:
+            self.yaw_extra = 0.0
+        self.yaw_rate = self.v * math.tan(self.steer) / WHEELBASE + self.yaw_extra
         self.yaw += self.yaw_rate * dt
         self.x += self.v * math.cos(self.yaw) * dt
         self.y += self.v * math.sin(self.yaw) * dt
@@ -185,6 +225,10 @@ class MockSim(Node):
         self.publish_odom()
         self.publish_imu()
         self.pub_rpm.publish(Float32(data=float(self.v / RPM_TO_MS)))
+        # Rear wheels: the inner one runs slower in a turn (v -/+ yaw_rate * track / 2).
+        half = self.get_parameter("track").value / 2.0
+        self.pub_rpm_l.publish(Float32(data=float((self.v - self.yaw_rate * half) / RPM_TO_MS)))
+        self.pub_rpm_r.publish(Float32(data=float((self.v + self.yaw_rate * half) / RPM_TO_MS)))
         self.pub_steer.publish(Float32(data=-float(self.steer)))   # + = right, like IFSSIM
         self.pub_brake.publish(Float32(data=float(brake)))
         self.tick_count += 1
