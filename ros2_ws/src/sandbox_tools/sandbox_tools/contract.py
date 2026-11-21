@@ -31,6 +31,7 @@ POSE = "/sandbox/pose"               # nav_msgs/Odometry        car pose, frame 
 MAP = "/sandbox/map"                 # sandbox_msgs/ConeArray   cone map, frame map
 PATH = "/sandbox/path"               # nav_msgs/Path            path to follow, frame map
 CONTROL = "/control_command"         # fs_msgs/ControlCommand   to the car
+MOTOR_COMMAND = "/motor_command"     # sandbox_msgs/MotorCommand  torque of the 2 rear motors (powertrain node)
 
 # --- QoS ----------------------------------------------------------------
 # Sensor streams: drop old data rather than queue it.
