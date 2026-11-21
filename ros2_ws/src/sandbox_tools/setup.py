@@ -25,6 +25,7 @@ setup(
             "visualizer = sandbox_tools.visualizer:main",
             "monitor = sandbox_tools.monitor:main",
             "mock_sim = sandbox_tools.mock_sim:main",
+            "powertrain = sandbox_tools.powertrain_node:main",
             "teleop = sandbox_tools.teleop:main",
             "smoke_check = sandbox_tools.smoke_check:main",
             "scorer = sandbox_tools.scorer:main",

@@ -8,6 +8,7 @@ find_package(std_msgs REQUIRED)
 rosidl_generate_interfaces(${PROJECT_NAME}
   "msg/Cone.msg"
   "msg/ConeArray.msg"
+  "msg/MotorCommand.msg"
   DEPENDENCIES std_msgs
 )
 
