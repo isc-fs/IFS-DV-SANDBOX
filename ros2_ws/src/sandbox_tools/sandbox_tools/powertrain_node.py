@@ -33,7 +33,7 @@ class Powertrain(Node):
         super().__init__("powertrain")
         self.declare_parameter("ediff", False)
         self.declare_parameter("wheelbase", 1.627)       # m
-        self.declare_parameter("track", 1.2)             # m, rear track width (check with the car!)
+        self.declare_parameter("track_width", 1.2)       # m, rear track width (placeholder: check with the car!)
         self.declare_parameter("max_steer_deg", 22.4)    # must match the sim / car
         self.declare_parameter("regen_fade_speed", 2.0)  # m/s
         self.speed = 0.0
@@ -58,7 +58,7 @@ class Powertrain(Node):
         p = lambda name: self.get_parameter(name).value  # noqa: E731
         left, right = split_torque(
             msg.throttle, msg.brake, msg.steering, self.speed,
-            ediff=p("ediff"), wheelbase=p("wheelbase"), track=p("track"),
+            ediff=p("ediff"), wheelbase=p("wheelbase"), track=p("track_width"),
             max_steer=math.radians(p("max_steer_deg")), regen_fade_speed=p("regen_fade_speed"))
         self.pub.publish(MotorCommand(header=msg.header, left=left, right=right))
 
