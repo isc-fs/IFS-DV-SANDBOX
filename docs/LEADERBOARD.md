@@ -29,6 +29,7 @@ with `--label alice`). The table is also written to
 - **Setup**: what ran as each stage (odometry / perception / SLAM / planning / control). `base` = sandbox baseline, `GT` =
   ground truth, `GT~` = noisy ground truth, `real` = the team pipeline,
   anything else = a package.
+- A `+regen` or `+ediff` after the control entry means the run used the optional two-motor powertrain (`powertrain:=true`, with `ediff:=true` for the e-diff). Runs that differ only in that get their own rows.
 - **Stage scores** (0–100) measure how good each stage's output is. A
   stage that was ground truth shows `GT` instead of a score.
 - **Time** = lap time + 2 s per cone hit (Formula Student rule).

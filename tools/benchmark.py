@@ -234,6 +234,13 @@ def main():
             config[k] = v
         if k == "params":
             sys.exit("params:= is not allowed in sb-score (scores must be comparable); use --gt-noise for noisy GT")
+    # Opt-in two-motor powertrain: stored in the run, so that runs that only differ
+    # in regen / e-diff are different runs in the leaderboard.
+    flags = dict(arg.partition(":=")[::2] for arg in a.stage_args)
+    if flags.get("ediff") == "true" and flags.get("powertrain") != "true":
+        sys.exit("ediff:=true needs powertrain:=true")
+    if flags.get("powertrain") == "true":
+        config["powertrain"] = "ediff" if flags.get("ediff") == "true" else "regen"
     if a.real:
         config = {s: "real" for s in STAGES}
     if a.gt_noise:
