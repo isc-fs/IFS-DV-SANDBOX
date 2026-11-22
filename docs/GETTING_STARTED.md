@@ -87,6 +87,10 @@ of speed and steering.
 
 `Ctrl+C` stops everything.
 
+*Optional:* try next year's two rear motors (regen, electronic differential)
+on the mock: `sb-launch sim:=mock powertrain:=true ediff:=true`. Everything
+about it is in [POWERTRAIN.md](POWERTRAIN.md). Without those flags nothing changes.
+
 ## 5. The real simulator (IFSSIM)
 
 IFSSIM runs on your computer, outside Docker. You need it plus **two

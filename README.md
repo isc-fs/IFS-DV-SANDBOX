@@ -90,6 +90,7 @@ Step by step, with what to expect: [GETTING_STARTED.md, step 5](docs/GETTING_STA
 | [docs/SPRINTS.md](docs/SPRINTS.md) | **When.** Weekly sprints, dates, demos and races |
 | [docs/LEADERBOARD.md](docs/LEADERBOARD.md) | **How good is it?** Scores for each stage + overall, vs the real pipeline |
 | [docs/TOPICS.md](docs/TOPICS.md) | The topic contract (reference) |
+| [docs/POWERTRAIN.md](docs/POWERTRAIN.md) | *Optional.* Next year's two rear motors: regen, electronic differential, per-motor control |
 | [docs/WORKFLOW.md](docs/WORKFLOW.md) | Commands cheat sheet, your own package, **your fork, branches + CI** (same as the real pipeline), bags |
 
 ## What's in the repo
