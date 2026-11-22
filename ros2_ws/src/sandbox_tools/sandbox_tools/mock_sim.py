@@ -101,7 +101,7 @@ class MockSim(Node):
         # M = (F_right - F_left) * track / 2, F = torque * max_accel * mass / 2 per wheel.
         self.declare_parameter("mass", 230.0)            # kg
         self.declare_parameter("yaw_inertia", 110.0)     # kg m^2
-        self.declare_parameter("track", 1.2)             # m, rear
+        self.declare_parameter("track_width", 1.2)             # m, rear
         self.declare_parameter("yaw_damping_tau", 0.15)  # s, how fast the tyres cancel the extra yaw rate
 
         track = self.get_parameter("track").value
@@ -211,7 +211,7 @@ class MockSim(Node):
         # Each motor pushes its own wheel: the difference is a yaw moment that the tyres
         # damp with a first-order lag. Equal torques (locked axle or open diff) add nothing.
         p = lambda name: self.get_parameter(name).value  # noqa: E731
-        moment = (t_right - t_left) * p("max_accel") * p("mass") / 2.0 * p("track") / 2.0
+        moment = (t_right - t_left) * p("max_accel") * p("mass") / 2.0 * p("track_width") / 2.0
         tau = p("yaw_damping_tau")
         self.yaw_extra += (moment / p("yaw_inertia") * tau - self.yaw_extra) * min(1.0, dt / tau)
         if self.v < 0.5:
@@ -226,7 +226,7 @@ class MockSim(Node):
         self.publish_imu()
         self.pub_rpm.publish(Float32(data=float(self.v / RPM_TO_MS)))
         # Rear wheels: the inner one runs slower in a turn (v -/+ yaw_rate * track / 2).
-        half = self.get_parameter("track").value / 2.0
+        half = self.get_parameter("track_width").value / 2.0
         self.pub_rpm_l.publish(Float32(data=float((self.v - self.yaw_rate * half) / RPM_TO_MS)))
         self.pub_rpm_r.publish(Float32(data=float((self.v + self.yaw_rate * half) / RPM_TO_MS)))
         self.pub_steer.publish(Float32(data=-float(self.steer)))   # + = right, like IFSSIM
