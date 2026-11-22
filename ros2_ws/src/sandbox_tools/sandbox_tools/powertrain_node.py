@@ -4,17 +4,14 @@
        /motor_rpm         std_msgs/Float32         speed, to fade the regen out when slow
   out: /motor_command     sandbox_msgs/MotorCommand   left / right torque, [-0.2, 1]
 
-Two ways to use the car:
-  easy   publish /control_command as always. This node drives the two motors:
-         brake -> regen (max 20 % of the forward torque), and, with
-         `ediff:=true`, the electronic differential splits the torque between
-         the wheels in a turn.
-  full   `sb-launch powertrain:=false` and publish /motor_command yourself
-         (plus /control_command for steering and the friction brake): you
-         control each motor, your own torque vectoring, your own regen.
+Off by default: the car drives with /control_command alone, as always. Opt in:
+  sb-launch powertrain:=true               # brake -> regen (max 20 % of the forward torque)
+  sb-launch powertrain:=true ediff:=true   # + electronic differential between the wheels
+  ros2 param set /powertrain ediff true    # or switch it while running
 
-    sb-launch ediff:=false              # locked axle, both motors the same torque
-    ros2 param set /powertrain ediff true   # or switch it while running
+To command each motor yourself, leave this node off and publish /motor_command
+(plus /control_command for steering and the friction brake): your own torque
+vectoring, your own regen.
 """
 from __future__ import annotations
 
@@ -34,7 +31,7 @@ from sandbox_tools.powertrain import split_torque
 class Powertrain(Node):
     def __init__(self):
         super().__init__("powertrain")
-        self.declare_parameter("ediff", True)
+        self.declare_parameter("ediff", False)
         self.declare_parameter("wheelbase", 1.627)       # m
         self.declare_parameter("track", 1.2)             # m, rear track width (check with the car!)
         self.declare_parameter("max_steer_deg", 22.4)    # must match the sim / car

@@ -43,6 +43,9 @@ def setup_str(cfg: dict) -> str:
         v = cfg.get(s, "baseline")
         v = SHORT.get(v, v.split("/")[0].replace("_pipeline", ""))
         parts.append(v)
+    # opt-in two-motor powertrain (absent in older runs): regen only, or regen + e-diff
+    if cfg.get("powertrain") in ("regen", "ediff"):
+        parts[-1] += "+" + cfg["powertrain"]
     return " / ".join(parts)
 
 
