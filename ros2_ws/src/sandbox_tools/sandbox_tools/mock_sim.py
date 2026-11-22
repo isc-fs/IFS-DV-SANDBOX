@@ -101,7 +101,7 @@ class MockSim(Node):
         # M = (F_right - F_left) * track / 2, F = torque * max_accel * mass / 2 per wheel.
         self.declare_parameter("mass", 230.0)            # kg
         self.declare_parameter("yaw_inertia", 110.0)     # kg m^2
-        self.declare_parameter("track_width", 1.2)             # m, rear
+        self.declare_parameter("track_width", 1.2)       # m, rear
         self.declare_parameter("yaw_damping_tau", 0.15)  # s, how fast the tyres cancel the extra yaw rate
 
         track = self.get_parameter("track").value
@@ -117,6 +117,7 @@ class MockSim(Node):
         self.cmd_time = -1e9
         self.motor = MotorCommand()
         self.motor_time = -1e9
+        self.warned = set()      # one-time warnings already printed
         self.t = 0.0
         self.rng = np.random.default_rng(0)
         self.get_logger().info(f"Mock sim on {path} ({len(self.cones_xy)} cones)")
@@ -164,6 +165,11 @@ class MockSim(Node):
         self.cmd = msg
         self.cmd_time = self.t
 
+    def warn_once(self, key: str, text: str):
+        if key not in self.warned:
+            self.warned.add(key)
+            self.get_logger().warning(text)
+
     def on_motor(self, msg: MotorCommand):
         self.motor = msg
         self.motor_time = self.t
@@ -187,12 +193,27 @@ class MockSim(Node):
         # Two rear motors: torque per wheel in [-0.2, 1] (negative = regen), from /motor_command
         # (the powertrain node, or your own). Default: nobody publishes it, and the car drives
         # as it always did: throttle on both motors, no regen, brake = friction brake only.
-        if self.t - self.motor_time < 0.5:
+        motor_fresh = self.t - self.motor_time < 0.5
+        if motor_fresh:
+            self.warned.discard("stall")
             t_left, t_right = self.motor.left, self.motor.right
         elif stale:
             t_left = t_right = 0.0
         else:
             t_left = t_right = self.cmd.throttle
+            if self.motor_time > -1e8:
+                self.warn_once("stall", "/motor_command stopped for more than 0.5 s: back to "
+                               "/control_command throttle on both motors (no regen, no e-diff).")
+        if motor_fresh and "throttle" not in self.warned and not stale and self.cmd.throttle > 0.05:
+            self.warned.add("throttle")        # check once: who publishes /motor_command?
+            who = [i.node_name for i in self.get_publishers_info_by_topic(contract.MOTOR_COMMAND)]
+            if who and "powertrain" not in who:
+                self.get_logger().warning(
+                    f"/motor_command ({', '.join(who)}) sets the motor torque: the throttle in "
+                    "/control_command is ignored. Steering and brake still come from it.")
+        if not (TORQUE_MIN <= t_left <= TORQUE_MAX and TORQUE_MIN <= t_right <= TORQUE_MAX):
+            self.warn_once("clip", f"motor torque out of range (left {t_left:.2f}, right {t_right:.2f}): "
+                           f"clipped to [{TORQUE_MIN}, {TORQUE_MAX}].")
         t_left = float(np.clip(t_left, TORQUE_MIN, TORQUE_MAX))
         t_right = float(np.clip(t_right, TORQUE_MIN, TORQUE_MAX))
         torque = (t_left + t_right) / 2.0

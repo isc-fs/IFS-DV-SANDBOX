@@ -96,6 +96,8 @@ def setup(context):
 
     if arg("ediff") == "true" and arg("powertrain") != "true":
         raise RuntimeError("ediff:=true needs powertrain:=true")
+    if arg("powertrain") == "true" and arg("sim") == "ifssim":
+        raise RuntimeError("powertrain:=true needs sim:=mock: IFSSIM has one drivetrain and ignores /motor_command")
     if arg("powertrain") == "true":
         # /control_command -> /motor_command: regen + optional electronic differential
         # for the two rear motors. Off when your control node drives each motor itself.
@@ -115,7 +117,7 @@ def setup(context):
     nodes.append(Node(package="sandbox_tools", executable="visualizer", name="visualizer",
                       parameters=common))
     nodes.append(Node(package="sandbox_tools", executable="monitor", name="monitor",
-                      output="screen", parameters=common))
+                      output="screen", parameters=common + [{"sim": sim}]))
 
     if arg("foxglove") == "true":
         nodes.append(Node(

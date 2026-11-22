@@ -239,6 +239,8 @@ def main():
     flags = dict(arg.partition(":=")[::2] for arg in a.stage_args)
     if flags.get("ediff") == "true" and flags.get("powertrain") != "true":
         sys.exit("ediff:=true needs powertrain:=true")
+    if flags.get("powertrain") == "true" and any(SCENARIOS[n]["sim"] != "mock" for n in names):
+        sys.exit("powertrain:=true only works on the mock scenarios: IFSSIM has one drivetrain")
     if flags.get("powertrain") == "true":
         config["powertrain"] = "ediff" if flags.get("ediff") == "true" else "regen"
     if a.real:

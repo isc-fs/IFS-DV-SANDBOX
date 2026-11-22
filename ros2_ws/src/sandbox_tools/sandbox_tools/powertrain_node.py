@@ -40,6 +40,16 @@ class Powertrain(Node):
         self.create_subscription(Float32, "/motor_rpm", self.on_rpm, contract.SENSOR_QOS)
         self.create_subscription(ControlCommand, contract.CONTROL, self.on_cmd, 10)
         self.pub = self.create_publisher(MotorCommand, contract.MOTOR_COMMAND, 10)
+        self.create_timer(2.0, self.check_publishers)
+
+    def check_publishers(self):
+        # This node is one publisher. A second one (your control node?) makes the two
+        # fight over the same topic and the motors flicker between their commands.
+        if self.count_publishers(contract.MOTOR_COMMAND) > 1:
+            self.get_logger().warning(
+                f"another node also publishes {contract.MOTOR_COMMAND}: the two fight over the motors. "
+                "Run either powertrain:=true or your own /motor_command publisher, not both.",
+                throttle_duration_sec=10.0)
 
     def on_rpm(self, msg: Float32):
         self.speed = max(0.0, msg.data * contract.RPM_TO_MS)
