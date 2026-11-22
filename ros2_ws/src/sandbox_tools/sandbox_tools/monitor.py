@@ -22,7 +22,7 @@ import rclpy
 from fs_msgs.msg import Track
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
-from sandbox_msgs.msg import Cone
+from sandbox_msgs.msg import Cone, MotorCommand
 from std_msgs.msg import Float32, String
 
 from sandbox_tools import contract
@@ -38,6 +38,7 @@ class Monitor(Node):
         super().__init__("monitor")
         self.declare_parameter("gate_radius", 3.0)
         self.declare_parameter("min_lap_distance", 30.0)
+        self.declare_parameter("sim", "")                   # set by the launch file
         self.cones = np.empty((0, 2))
         self.gate = None
         self.last = None
@@ -53,8 +54,17 @@ class Monitor(Node):
         self.pub = self.create_publisher(String, "/sandbox/monitor", 10)
         self.pub_err = self.create_publisher(Float32, "/sandbox/monitor/pose_error", 10)
         self.create_subscription(Odometry, contract.POSE, self.on_pose, 10)
+        self.create_subscription(MotorCommand, contract.MOTOR_COMMAND, self.on_motor_command, 10)
+        self.warned_motor = False
         self.create_subscription(Track, contract.GT_TRACK, self.on_track, contract.LATCHED_QOS)
         self.create_subscription(Odometry, contract.GT_ODOM, self.on_odom, contract.SENSOR_QOS)
+
+    def on_motor_command(self, _msg):
+        # IFSSIM has one drivetrain: nobody reads /motor_command there.
+        if self.get_parameter("sim").value == "ifssim" and not self.warned_motor:
+            self.warned_motor = True
+            self.get_logger().warning("/motor_command is published, but IFSSIM ignores it (one drivetrain): "
+                                      "the car only follows /control_command. Use sim:=mock for two motors.")
 
     def on_track(self, msg: Track):
         self.cones = np.array([(c.location.x, c.location.y) for c in msg.track]).reshape(-1, 2)
