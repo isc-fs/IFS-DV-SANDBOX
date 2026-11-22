@@ -17,6 +17,8 @@ in `sandbox_tools/contract.py` (`from sandbox_tools import contract`).
 
 ### Rear motors, regen and electronic differential
 
+Step-by-step guide with examples: [POWERTRAIN.md](POWERTRAIN.md). Reference:
+
 The car has two rear motors, one per wheel. You can stay with `/control_command` (easy) or take over the motors (full):
 
 - **Default: off.** Publish `/control_command` and the car behaves as it always did (throttle, friction brake, no regen). Nothing changes unless you opt in.

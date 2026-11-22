@@ -76,6 +76,8 @@ hit, faster than the baseline (118.8 s):
 `sb-score perception:=gt control:=<you>/control --scenario ifssim-B`.
 Iterate on the mock (`sim:=mock`), validate in IFSSIM.
 **Harder:** the same on track A (`--scenario ifssim-A`, baseline 176.4 s).
+**Optional:** next year's car has two rear motors with regen. Try the
+interface on the mock: [POWERTRAIN.md](POWERTRAIN.md).
 
 One lap, not several: over many laps the baseline odometry drifts and the
 map smears (fixing that is Level 4), which isn't your control's fault.
