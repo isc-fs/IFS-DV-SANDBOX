@@ -8,8 +8,8 @@
     sb-launch control:=off                      # drive yourself: ros2 run sandbox_tools teleop
     sb-launch planning:=alice_pipeline/planning # use your own node
     sb-launch params:=/sandbox/my_params.yaml   # override parameters
-    sb-launch ediff:=false                      # locked rear axle (default: electronic differential on)
-    sb-launch powertrain:=false                 # publish /motor_command yourself (torque of each rear motor)
+    sb-launch powertrain:=true                  # two rear motors: regen on brake (max 20 % of forward torque)
+    sb-launch powertrain:=true ediff:=true      # ... and an electronic differential between the wheels
 
 Stage values:
     baseline   the simple node in sandbox_pipeline (default)
@@ -94,6 +94,8 @@ def setup(context):
         nodes.append(Node(package=pkg, executable=exe, name=name, output="screen",
                           parameters=common, emulate_tty=True))
 
+    if arg("ediff") == "true" and arg("powertrain") != "true":
+        raise RuntimeError("ediff:=true needs powertrain:=true")
     if arg("powertrain") == "true":
         # /control_command -> /motor_command: regen + optional electronic differential
         # for the two rear motors. Off when your control node drives each motor itself.
@@ -131,10 +133,10 @@ def generate_launch_description():
                               description="track CSV for sim:=mock (file in tracks/)"),
         DeclareLaunchArgument("skew", default_value="false", description="publish /lidar_points_skewed"),
         DeclareLaunchArgument("foxglove", default_value="true"),
-        DeclareLaunchArgument("powertrain", default_value="true",
-                              description="start the powertrain node (/control_command -> /motor_command)"),
-        DeclareLaunchArgument("ediff", default_value="true",
-                              description="electronic differential between the two rear motors"),
+        DeclareLaunchArgument("powertrain", default_value="false",
+                              description="opt in: start the powertrain node (/control_command -> /motor_command, with regen)"),
+        DeclareLaunchArgument("ediff", default_value="false",
+                              description="opt in, with powertrain:=true: electronic differential between the two rear motors"),
         DeclareLaunchArgument("real", default_value="false",
                               description="republish the real IFS09 pipeline's outputs (benchmark reference)"),
         DeclareLaunchArgument("params", default_value="", description="optional params YAML"),

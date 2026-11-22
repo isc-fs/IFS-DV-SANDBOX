@@ -43,7 +43,7 @@ from sandbox_tools import contract
 from sandbox_tools.node_utils import run
 from sandbox_tools.geometry import quat_from_yaw
 from sandbox_tools.pointcloud import make_cloud
-from sandbox_tools.powertrain import TORQUE_MAX, TORQUE_MIN, split_torque
+from sandbox_tools.powertrain import TORQUE_MAX, TORQUE_MIN
 
 COLOR_NAMES = {"yellow": FsCone.YELLOW, "blue": FsCone.BLUE,
                "big_orange": FsCone.ORANGE_BIG, "orange_big": FsCone.ORANGE_BIG,
@@ -184,15 +184,15 @@ class MockSim(Node):
         dt = self.dt
         self.t += dt
         stale = self.t - self.cmd_time > 0.5
-        # Two rear motors: torque per wheel in [-0.2, 1] (negative = regen). If nobody
-        # publishes /motor_command (powertrain:=false and no own node), derive it from the
-        # ControlCommand with a locked axle, so the car still drives.
+        # Two rear motors: torque per wheel in [-0.2, 1] (negative = regen), from /motor_command
+        # (the powertrain node, or your own). Default: nobody publishes it, and the car drives
+        # as it always did: throttle on both motors, no regen, brake = friction brake only.
         if self.t - self.motor_time < 0.5:
             t_left, t_right = self.motor.left, self.motor.right
         elif stale:
             t_left = t_right = 0.0
         else:
-            t_left, t_right = split_torque(self.cmd.throttle, self.cmd.brake, 0.0, self.v, ediff=False)
+            t_left = t_right = self.cmd.throttle
         t_left = float(np.clip(t_left, TORQUE_MIN, TORQUE_MAX))
         t_right = float(np.clip(t_right, TORQUE_MIN, TORQUE_MAX))
         torque = (t_left + t_right) / 2.0
